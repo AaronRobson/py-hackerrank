@@ -1,0 +1,35 @@
+.DEFAULT_GOAL := all
+
+.PHONY: all
+all: check test
+
+.PHONY: clean
+clean:
+	rm -f *.pyc
+
+.PHONY: install-packages
+install-packages:
+	pip3 install --upgrade \
+	  -r dev-requirements.txt \
+	  -r requirements.txt
+
+.PHONY: check
+check: lint type-check
+
+.PHONY: lint
+lint:
+	flake8 .
+
+.PHONY: type-check
+type-check:
+	mypy .
+
+.PHONY: test
+test: unittest
+
+.PHONY: unittest
+unittest: unittest-python
+
+.PHONY: unittest-python
+unittest-python:
+	python3 -m unittest -v $(testcase)
