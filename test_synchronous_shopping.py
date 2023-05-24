@@ -8,14 +8,16 @@ from synchronous_shopping import (
     Road,
     parse_roads,
     Node,
+    dijkstra,
     _find_direct_roads,
     _find_new_node_in_progress,
-    dijkstra,
+    find_centers_with_fishes_we_need,
+    stop_early_when_all_fish_are_found,
+    all_splits_in_two,
 )
 
 
 class TestShop(unittest.TestCase):
-    @unittest.expectedFailure
     def test_sample_test_case_0(self):
         self.assertEqual(
             shop(
@@ -36,7 +38,7 @@ class TestShop(unittest.TestCase):
                     [4, 5, 10],
                 ],
             ),
-            31)
+            30)
 
     def test_sample_test_case_1(self):
         self.assertEqual(
@@ -249,3 +251,105 @@ class TestFindNewNodeInProgress(unittest.TestCase):
             ),
             [2, 3],
         )
+
+
+class TestFindCentersWithFishesWeNeed(unittest.TestCase):
+    def test_sample_test_case_0(self):
+        self.assertEqual(
+            find_centers_with_fishes_we_need(
+                centers={
+                    1: {1},
+                    2: {2},
+                    3: {3},
+                    4: {4},
+                    5: {5},
+                },
+                fishes_we_need={2, 3, 4},
+            ),
+            {
+                2: {2},
+                3: {3},
+                4: {4},
+            },
+        )
+
+    def test_sample_test_case_1(self):
+        self.maxDiff = None
+        self.assertEqual(
+            find_centers_with_fishes_we_need(
+                centers={
+                    1: {1, 2},
+                    2: {3},
+                    3: set(),
+                    4: {1, 3},
+                    5: {2},
+                    6: {3},
+                },
+                fishes_we_need=set(),
+            ),
+            {})
+
+
+class TestStopEarlyWhenAllFishAreFound(unittest.TestCase):
+    def test_sample_test_case_0(self):
+        self.assertEqual(
+            stop_early_when_all_fish_are_found(
+                centers_permutation=(
+                    (2, {2}),
+                    (3, {3}),
+                    (4, {4}),
+                ),
+                fishes_we_need={2, 3, 4},
+            ),
+            (2, 3, 4))
+
+    def test_sample_test_case_1(self):
+        self.assertEqual(
+            stop_early_when_all_fish_are_found(
+                centers_permutation=(
+                    (1, {1, 2}),
+                    (2, {3}),
+                    (3, set()),
+                    (4, {1, 3}),
+                    (5, {2}),
+                    (6, {3}),
+                ),
+                fishes_we_need=set(),
+            ),
+            tuple())
+
+
+class TestAllSplitsInTwo(unittest.TestCase):
+    def test_sample_test_case_0(self):
+        self.assertEqual(
+            all_splits_in_two(centers=(2, 3, 4)),
+            (
+                (tuple(), (2, 3, 4)),
+                ((2,), (3, 4)),
+                ((2, 3), (4,)),
+                ((2, 3, 4), tuple()),
+            ))
+
+    def test_empty(self):
+        self.assertEqual(
+            all_splits_in_two(centers=tuple()),
+            (
+                tuple([tuple(), tuple()]),
+            ))
+
+    def test_one(self):
+        self.assertEqual(
+            all_splits_in_two(centers=(42,)),
+            (
+                tuple([tuple(), (42,)]),
+                tuple([(42,), tuple()]),
+            ))
+
+    def test_two(self):
+        self.assertEqual(
+            all_splits_in_two(centers=(42, 43)),
+            (
+                tuple([tuple(), (42, 43)]),
+                tuple([(42,), (43,)]),
+                tuple([(42, 43), tuple()]),
+            ))

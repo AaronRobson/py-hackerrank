@@ -1,9 +1,28 @@
 # https://www.hackerrank.com/challenges/synchronous-shopping/problem
 
-from typing import Dict, Optional, Tuple, Set, NamedTuple
+from typing import Dict, List, Optional, Tuple, Set, NamedTuple
 from sys import maxsize
+from itertools import permutations
+
+
+def _pairwise(iterable):
+    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+try:
+    # Available in python3.11+
+    from itertools import pairwise  # type: ignore[attr-defined]
+except ImportError:
+    from itertools import tee
+    pairwise = _pairwise
+
 
 Cache = Dict[Set[int], int]
+Center = int
+Centers = Dict[Center, Set[int]]
 
 
 def shop(n, k, centers, roads):
@@ -29,27 +48,71 @@ def shop(n, k, centers, roads):
                 edges=roads,
                 from_=starting_vertex,
             ).items()
+            if starting_vertex != a
         }
     )
 
-    fishes = set(fishes) - centers[starting_vertex] - centers[finishing_vertex]
+    fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
         return cache[frozenset({starting_vertex, finishing_vertex})]
 
-    # todo have the cats explore different combinations of other centers for fishes we need
-    return 0
+    centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
+
+    all_permutations_of_centers = tuple(permutations(centers_with_fish_we_need.items()))
+    all_permutations_of_centers_with_early_exits = tuple(
+        stop_early_when_all_fish_are_found(
+            centers_permutation=centers_permutation,
+            fishes_we_need=fishes)
+        for centers_permutation in all_permutations_of_centers)
+
+    potential_routes: List[Tuple[int, ...], Tuple[int, ...]] = []
+    for permutation in all_permutations_of_centers_with_early_exits:
+        for cat_1_route, cat_2_route in all_splits_in_two(permutation):
+            potential_routes.append((
+                tuple([starting_vertex] + list(cat_1_route) + [finishing_vertex]),
+                tuple([starting_vertex] + list(cat_2_route) + [finishing_vertex]),
+            ))
+
+    potential_costs: List[int] = []
+    for potential_route in potential_routes:
+        cat_route_costs: List[int] = []
+        if len(potential_route) != 2:
+            raise ValueError(f'Expected len(potential_route)==2 but was {len(potential_route)!r}')
+        for cat_route in potential_route:
+            cat_route_cost = 0
+            for from_, to_ in pairwise(cat_route):
+                if frozenset({from_, to_}) not in cache:
+                    cache.update(
+                        {
+                            frozenset({from_, a}): cost
+                            for a, cost in dijkstra(
+                                vertices=vertices,
+                                edges=roads,
+                                from_=from_,
+                            ).items()
+                            if from_ != a
+                        }
+                    )
+                cat_route_cost += cache[frozenset({from_, to_})]
+            cat_route_costs.append(cat_route_cost)
+        potential_costs.append(max(cat_route_costs))
+    return min(potential_costs)
 
 
 def _one_to_n(n: int) -> Tuple[int, ...]:
     return tuple(range(1, n + 1))
 
 
+def _one_to_n_set(n: int) -> Set[int]:
+    return set(_one_to_n(n))
+
+
 parse_cats = _one_to_n
 parse_vertices = _one_to_n
-parse_fishes = _one_to_n
+parse_fishes = _one_to_n_set
 
 
-def parse_centers(centers):
+def parse_centers(centers) -> Centers:
     return {
         i: set(map(int, center.split()[1:]))
         for i, center in enumerate(centers, start=1)
@@ -126,3 +189,32 @@ def _find_new_node_in_progress(set_latest) -> Optional[int]:
     if not unexplored:
         return None
     return min(unexplored, key=lambda item: item[1].latest_cost)[0]
+
+
+def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: Set[int]) -> Centers:
+    return {
+        center: fishes_of_center
+        for center, fishes_of_center in centers.items()
+        if fishes_we_need & fishes_of_center
+    }
+
+
+def stop_early_when_all_fish_are_found(*, centers_permutation: Tuple[Tuple[int, Set[int]], ...], fishes_we_need: Set[int]) -> Tuple[int, ...]:
+    output = []
+    fishes_we_have: Set[int] = set()
+    for center, fishes_of_center in centers_permutation:
+        if not bool(fishes_we_need - fishes_we_have):
+            break
+        output.append(center)
+        fishes_we_have |= fishes_of_center
+    return tuple(output)
+
+
+def all_splits_in_two(centers: Tuple[int, ...]) -> Tuple[Tuple[Tuple[int, ...], Tuple[int, ...]], ...]:
+    output = []
+    for i in range(0, len(centers) + 1):
+        output.append((
+            centers[:i],
+            centers[i:],
+        ))
+    return tuple(output)
