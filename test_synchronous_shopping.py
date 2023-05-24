@@ -682,3 +682,7 @@ class TestAllSplitsInTwo(unittest.TestCase):
                 ((42,), (43,)),
                 ((42, 43), tuple()),
             ])
+
+
+if __name__ == '__main__':
+    unittest.main()
