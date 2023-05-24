@@ -4,7 +4,7 @@
 '''
 
 import os
-from typing import Dict, List, Optional, Tuple, Set, FrozenSet, NamedTuple
+from typing import Dict, List, Optional, Tuple, Set, FrozenSet, NamedTuple, Sequence
 from sys import maxsize
 from itertools import permutations
 
@@ -44,40 +44,37 @@ def shop(n: int, k: int, centers, roads) -> int:
 
     cache: Cache = {}
 
-    cache.update(
-        {
-            frozenset({starting_vertex, a}): cost
-            for a, cost in dijkstra(
+    for a, cost in dijkstra(
                 vertices=vertices,
                 edges=roads,
                 from_=starting_vertex,
-            ).items()
-            if starting_vertex != a
-        }
-    )
+            ).items():
+        if starting_vertex == a:
+            continue
+        cache[frozenset([starting_vertex, a])] = cost
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
-        return cache[frozenset({starting_vertex, finishing_vertex})]
+        return cache[frozenset([starting_vertex, finishing_vertex])]
 
     centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
 
-    all_permutations_of_centers = tuple(permutations(centers_with_fish_we_need.items()))
-    all_permutations_of_centers_with_early_exits = tuple(
+    all_permutations_of_centers = permutations(centers_with_fish_we_need.items())
+    all_permutations_of_centers_with_early_exits = (
         stop_early_when_all_fish_are_found(
             centers_permutation=centers_permutation,
             fishes_we_need=fishes)
         for centers_permutation in all_permutations_of_centers)
 
-    potential_routes: List[Tuple[Tuple[int, ...], Tuple[int, ...]]] = []
-    for permutation in all_permutations_of_centers_with_early_exits:
-        for cat_1_route, cat_2_route in all_splits_in_two(permutation):
-            potential_routes.append((
-                tuple([starting_vertex] + list(cat_1_route) + [finishing_vertex]),
-                tuple([starting_vertex] + list(cat_2_route) + [finishing_vertex]),
-            ))
-
-    potential_costs: List[int] = []
+    potential_routes: Sequence[Tuple[Tuple[int, ...], Tuple[int, ...]]] = (
+        (
+            (starting_vertex,) + cat_1_route + (finishing_vertex,),
+            (starting_vertex,) + cat_2_route + (finishing_vertex,),
+        )
+        for permutation in all_permutations_of_centers_with_early_exits
+        for cat_1_route, cat_2_route in all_splits_in_two(permutation)
+    )
+    current_min_cost = maxsize
     for potential_route in potential_routes:
         cat_route_costs: List[int] = []
         if len(potential_route) != cats_count:
@@ -85,22 +82,20 @@ def shop(n: int, k: int, centers, roads) -> int:
         for cat_route in potential_route:
             cat_route_cost = 0
             for from_, to_ in pairwise(cat_route):
-                if frozenset({from_, to_}) not in cache:
-                    cache.update(
-                        {
-                            frozenset({from_, a}): cost
-                            for a, cost in dijkstra(
+                current_frozen_set = frozenset([from_, to_])
+                if current_frozen_set not in cache:
+                    for a, cost in dijkstra(
                                 vertices=vertices,
                                 edges=roads,
                                 from_=from_,
-                            ).items()
-                            if from_ != a
-                        }
-                    )
-                cat_route_cost += cache[frozenset({from_, to_})]
+                            ).items():
+                        if from_ == a:
+                            continue
+                        cache[current_frozen_set] = cost
+                cat_route_cost += cache[current_frozen_set]
             cat_route_costs.append(cat_route_cost)
-        potential_costs.append(max(cat_route_costs))
-    return min(potential_costs)
+        current_min_cost = min(current_min_cost, max(cat_route_costs))
+    return current_min_cost
 
 
 def _one_to_n(n: int) -> Tuple[int, ...]:
@@ -203,25 +198,22 @@ def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: Set[in
     }
 
 
-def stop_early_when_all_fish_are_found(*, centers_permutation: Tuple[Tuple[int, Set[int]], ...], fishes_we_need: Set[int]) -> Tuple[int, ...]:
-    output = []
+def stop_early_when_all_fish_are_found(*, centers_permutation: Tuple[Tuple[int, Set[int]], ...], fishes_we_need: Set[int]) -> Sequence[int]:
     fishes_we_have: Set[int] = set()
     for center, fishes_of_center in centers_permutation:
         if not bool(fishes_we_need - fishes_we_have):
             break
-        output.append(center)
+        yield center
         fishes_we_have |= fishes_of_center
-    return tuple(output)
 
 
-def all_splits_in_two(centers: Tuple[int, ...]) -> Tuple[Tuple[Tuple[int, ...], Tuple[int, ...]], ...]:
-    output = []
+def all_splits_in_two(centers: Sequence[int]) -> Sequence[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
+    centers = tuple(centers)
     for i in range(0, len(centers) + 1):
-        output.append((
+        yield (
             centers[:i],
             centers[i:],
-        ))
-    return tuple(output)
+        )
 
 
 if __name__ == '__main__':
