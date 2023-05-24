@@ -1,6 +1,10 @@
-# https://www.hackerrank.com/challenges/synchronous-shopping/problem
+#!/bin/python3
 
-from typing import Dict, List, Optional, Tuple, Set, NamedTuple
+'''https://www.hackerrank.com/challenges/synchronous-shopping/problem
+'''
+
+import os
+from typing import Dict, List, Optional, Tuple, Set, FrozenSet, NamedTuple
 from sys import maxsize
 from itertools import permutations
 
@@ -20,13 +24,13 @@ except ImportError:
     pairwise = _pairwise
 
 
-Cache = Dict[Set[int], int]
+Cache = Dict[FrozenSet[int], int]
 Center = int
 Centers = Dict[Center, Set[int]]
 
 
-def shop(n, k, centers, roads):
-    # cats_count = 2
+def shop(n: int, k: int, centers, roads) -> int:
+    cats_count = 2
     # cats = parse_cats(cats_count)
 
     vertices = parse_vertices(n)
@@ -65,7 +69,7 @@ def shop(n, k, centers, roads):
             fishes_we_need=fishes)
         for centers_permutation in all_permutations_of_centers)
 
-    potential_routes: List[Tuple[int, ...], Tuple[int, ...]] = []
+    potential_routes: List[Tuple[Tuple[int, ...], Tuple[int, ...]]] = []
     for permutation in all_permutations_of_centers_with_early_exits:
         for cat_1_route, cat_2_route in all_splits_in_two(permutation):
             potential_routes.append((
@@ -76,8 +80,8 @@ def shop(n, k, centers, roads):
     potential_costs: List[int] = []
     for potential_route in potential_routes:
         cat_route_costs: List[int] = []
-        if len(potential_route) != 2:
-            raise ValueError(f'Expected len(potential_route)==2 but was {len(potential_route)!r}')
+        if len(potential_route) != cats_count:
+            raise ValueError(f'Expected len(potential_route)=={cats_count!r} but was {len(potential_route)!r}')
         for cat_route in potential_route:
             cat_route_cost = 0
             for from_, to_ in pairwise(cat_route):
@@ -137,7 +141,7 @@ def parse_roads(roads) -> Tuple[Road, ...]:
         for road in roads)
 
 
-def dijkstra(vertices: Tuple[int], edges: Tuple[Road], from_: int) -> Dict[int, int]:
+def dijkstra(vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
     '''https://www.youtube.com/watch?v=EFg3u_E6eHU
     '''
     set_latest = {vertex: Node() for vertex in vertices}
@@ -175,7 +179,7 @@ class Node():
         return f'{self.__class__.__name__}({", ".join(items)})'
 
 
-def _find_direct_roads(*, edges: Tuple[Road], from_: int) -> Dict[int, int]:
+def _find_direct_roads(*, edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
     output = {}
     for edge in edges:
         if from_ in edge.route:
@@ -218,3 +222,32 @@ def all_splits_in_two(centers: Tuple[int, ...]) -> Tuple[Tuple[Tuple[int, ...], 
             centers[i:],
         ))
     return tuple(output)
+
+
+if __name__ == '__main__':
+    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+
+    first_multiple_input = input().rstrip().split()
+
+    n = int(first_multiple_input[0])
+
+    m = int(first_multiple_input[1])
+
+    k = int(first_multiple_input[2])
+
+    centers = []
+
+    for _ in range(n):
+        centers_item = input()
+        centers.append(centers_item)
+
+    roads = []
+
+    for _ in range(m):
+        roads.append(list(map(int, input().rstrip().split())))
+
+    res = shop(n, k, centers, roads)
+
+    fptr.write(str(res) + '\n')
+
+    fptr.close()
