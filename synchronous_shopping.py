@@ -4,12 +4,14 @@
 '''
 
 import os
-from typing import Dict, List, Optional, Tuple, Set, FrozenSet, NamedTuple, Sequence
+from typing import Dict, List, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
 from sys import maxsize
 from itertools import permutations
 
 
 def _pairwise(iterable):
+    '''From: https://docs.python.org/3/library/itertools.html#itertools.pairwise
+    '''
     # pairwise('ABCDEFG') --> AB BC CD DE EF FG
     a, b = tee(iterable)
     next(b, None)
@@ -66,7 +68,7 @@ def shop(n: int, k: int, centers, roads) -> int:
             fishes_we_need=fishes)
         for centers_permutation in all_permutations_of_centers)
 
-    potential_routes: Sequence[Tuple[Tuple[int, ...], Tuple[int, ...]]] = (
+    potential_routes: Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]] = (
         (
             (starting_vertex,) + cat_1_route + (finishing_vertex,),
             (starting_vertex,) + cat_2_route + (finishing_vertex,),
@@ -83,7 +85,8 @@ def shop(n: int, k: int, centers, roads) -> int:
             cat_route_cost = 0
             for from_, to_ in pairwise(cat_route):
                 current_frozen_set = frozenset([from_, to_])
-                if current_frozen_set not in cache:
+                current_cache_value = cache.get(current_frozen_set, None)
+                if current_cache_value is None:
                     for a, cost in dijkstra(
                                 vertices=vertices,
                                 edges=roads,
@@ -92,7 +95,10 @@ def shop(n: int, k: int, centers, roads) -> int:
                         if from_ == a:
                             continue
                         cache[current_frozen_set] = cost
-                cat_route_cost += cache[current_frozen_set]
+                        if a == to_:
+                            cat_route_cost += cost
+                else:
+                    cat_route_cost += current_cache_value
             cat_route_costs.append(cat_route_cost)
         current_min_cost = min(current_min_cost, max(cat_route_costs))
     return current_min_cost
@@ -194,11 +200,11 @@ def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: Set[in
     return {
         center: fishes_of_center
         for center, fishes_of_center in centers.items()
-        if fishes_we_need & fishes_of_center
+        if not fishes_we_need.isdisjoint(fishes_of_center)
     }
 
 
-def stop_early_when_all_fish_are_found(*, centers_permutation: Tuple[Tuple[int, Set[int]], ...], fishes_we_need: Set[int]) -> Sequence[int]:
+def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[int, Set[int]]], fishes_we_need: Set[int]) -> Iterable[int]:
     fishes_we_have: Set[int] = set()
     for center, fishes_of_center in centers_permutation:
         if not bool(fishes_we_need - fishes_we_have):
@@ -207,12 +213,12 @@ def stop_early_when_all_fish_are_found(*, centers_permutation: Tuple[Tuple[int, 
         fishes_we_have |= fishes_of_center
 
 
-def all_splits_in_two(centers: Sequence[int]) -> Sequence[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
-    centers = tuple(centers)
-    for i in range(0, len(centers) + 1):
+def all_splits_in_two(centers: Iterable[int]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
+    centers_all = tuple(centers)
+    for i in range(0, len(centers_all) + 1):
         yield (
-            centers[:i],
-            centers[i:],
+            centers_all[:i],
+            centers_all[i:],
         )
 
 
