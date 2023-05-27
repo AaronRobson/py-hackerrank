@@ -44,20 +44,13 @@ def shop(n: int, k: int, centers, roads) -> int:
     centers = parse_centers(centers)
     roads = parse_roads(roads)
 
-    cache: Cache = {}
-
-    for a, cost in dijkstra(
-                vertices=vertices,
-                edges=roads,
-                from_=starting_vertex,
-            ).items():
-        if starting_vertex == a:
-            continue
-        cache[frozenset([starting_vertex, a])] = cost
+    rf = RouteFinder(
+        vertices=vertices,
+        edges=roads)
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
-        return cache[frozenset([starting_vertex, finishing_vertex])]
+        return rf.find_route_cost(starting_vertex, finishing_vertex)
 
     centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
 
@@ -79,26 +72,10 @@ def shop(n: int, k: int, centers, roads) -> int:
     current_min_cost = maxsize
     for potential_route in potential_routes:
         cat_route_costs: List[int] = []
-        if len(potential_route) != cats_count:
-            raise ValueError(f'Expected len(potential_route)=={cats_count!r} but was {len(potential_route)!r}')
         for cat_route in potential_route:
             cat_route_cost = 0
             for from_, to_ in pairwise(cat_route):
-                current_frozen_set = frozenset([from_, to_])
-                current_cache_value = cache.get(current_frozen_set, None)
-                if current_cache_value is None:
-                    for a, cost in dijkstra(
-                                vertices=vertices,
-                                edges=roads,
-                                from_=from_,
-                            ).items():
-                        if from_ == a:
-                            continue
-                        cache[current_frozen_set] = cost
-                        if a == to_:
-                            cat_route_cost += cost
-                else:
-                    cat_route_cost += current_cache_value
+                cat_route_cost += rf.find_route_cost(from_, to_)
             cat_route_costs.append(cat_route_cost)
         current_min_cost = min(current_min_cost, max(cat_route_costs))
     return current_min_cost
@@ -143,27 +120,66 @@ def parse_roads(roads) -> Tuple[Road, ...]:
 
 
 def dijkstra(vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
-    '''https://www.youtube.com/watch?v=EFg3u_E6eHU
+    '''This will not be able to use the cache on subsequent calls.
     '''
-    set_latest = {vertex: Node() for vertex in vertices}
-    set_latest[from_].latest_cost = 0
-    node_in_progress: Optional[int] = from_
+    return RouteFinder(
+        vertices=vertices,
+        edges=edges,
+    ).dijkstra(from_=from_)
 
-    while node_in_progress is not None:
-        for to, cost in _find_direct_roads(edges=edges, from_=node_in_progress).items():
-            if set_latest[to].explored:
+
+class RouteFinder():
+    def __init__(self, vertices: Tuple[int, ...], edges: Tuple[Road, ...]):
+        self.vertices = vertices
+        self.edges = edges
+        self.reset_cache()
+
+    def reset_cache(self):
+        self.cache: Cache = {}
+
+    def find_route_cost(self, from_: int, to: int) -> int:
+        current_frozen_set = frozenset([from_, to])
+        current_cache_value = self.cache.get(current_frozen_set, None)
+        if current_cache_value is not None:
+            return current_cache_value
+        self.dijkstra(from_=from_)
+        return self.cache[current_frozen_set]
+
+    def dijkstra(self, *, from_: int) -> Dict[int, int]:
+        '''https://www.youtube.com/watch?v=EFg3u_E6eHU
+        '''
+        set_latest = {vertex: Node() for vertex in self.vertices}
+        set_latest[from_].latest_cost = 0
+
+        for to, node in set_latest.items():
+            current_frozen_set = frozenset([from_, to])
+            current_cache_value = self.cache.get(current_frozen_set, None)
+            if current_cache_value is None:
                 continue
-            this_cost = set_latest[node_in_progress].latest_cost + cost
-            if set_latest[to].latest_cost > this_cost:
-                set_latest[to].latest_cost = this_cost
+            node.latest_cost = current_cache_value
+            node.explored = True
 
-        set_latest[node_in_progress].explored = True
-        node_in_progress = _find_new_node_in_progress(set_latest)
+        node_in_progress: Optional[int] = from_
 
-    return {
-        key: value.latest_cost
-        for key, value in set_latest.items()
-    }
+        while node_in_progress is not None:
+            for to, cost in _find_direct_roads(edges=self.edges, from_=node_in_progress).items():
+                if set_latest[to].explored:
+                    continue
+                this_cost = set_latest[node_in_progress].latest_cost + cost
+                if set_latest[to].latest_cost > this_cost:
+                    set_latest[to].latest_cost = this_cost
+
+            set_latest[node_in_progress].explored = True
+            node_in_progress = _find_new_node_in_progress(set_latest)
+
+        self.cache.update({
+            frozenset([from_, to]): value.latest_cost
+            for to, value in set_latest.items()
+        })
+        return {
+            key: value.latest_cost
+            for key, value in set_latest.items()
+        }
 
 
 class Node():
