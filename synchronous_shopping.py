@@ -32,7 +32,7 @@ Centers = Dict[Center, Set[int]]
 
 
 def shop(n: int, k: int, centers, roads) -> int:
-    cats_count = 2
+    # cats_count = 2
     # cats = parse_cats(cats_count)
 
     vertices = parse_vertices(n)
