@@ -9,6 +9,7 @@ from synchronous_shopping import (
     parse_roads,
     Node,
     dijkstra,
+    RouteFinder,
     _find_direct_roads,
     _find_new_node_in_progress,
     find_centers_with_fishes_we_need,
@@ -3429,6 +3430,36 @@ class TestDijkstra(unittest.TestCase):
                 4: 20,
                 5: 20,
             })
+
+
+class TestRouteFinder(unittest.TestCase):
+    def test_sample_test_case_0(self):
+        rf = RouteFinder(
+            vertices=(1, 2, 3, 4, 5),
+            edges=(
+                Road(route={1, 2}, cost=10),
+                Road(route={1, 3}, cost=10),
+                Road(route={2, 4}, cost=10),
+                Road(route={3, 5}, cost=10),
+                Road(route={4, 5}, cost=10),
+            ),
+        )
+        self.assertEqual(
+            rf.find_route_cost(1, 5),
+            20,
+            'start to end')
+        self.assertEqual(
+            rf.find_route_cost(5, 1),
+            20,
+            'end to start')
+        self.assertEqual(
+            rf.find_route_costs([1, 5, 1]),
+            40,
+            'start to end and back to start')
+        self.assertEqual(
+            rf.find_route_costs([1, 4, 5]),
+            30,
+            'start to end but the long way')
 
 
 class TestNode(unittest.TestCase):

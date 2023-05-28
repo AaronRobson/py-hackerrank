@@ -74,9 +74,7 @@ def shop(n: int, k: int, centers, roads) -> int:
     for potential_route in potential_routes:
         cat_route_costs: List[int] = []
         for cat_route in potential_route:
-            cat_route_cost = 0
-            for from_, to_ in pairwise(cat_route):
-                cat_route_cost += rf.find_route_cost(from_, to_)
+            cat_route_cost = rf.find_route_costs(cat_route)
             cat_route_costs.append(cat_route_cost)
         current_min_cost = min(current_min_cost, max(cat_route_costs))
     return current_min_cost
@@ -145,6 +143,12 @@ class RouteFinder():
             return current_cache_value
         self.dijkstra(from_=from_)
         return self.cache[current_frozen_set]
+
+    def find_route_costs(self, cat_route: Iterable[int]) -> int:
+        return sum(
+            self.find_route_cost(from_, to_)
+            for from_, to_ in pairwise(cat_route)
+        )
 
     def dijkstra(self, *, from_: int) -> Dict[int, int]:
         '''https://www.youtube.com/watch?v=EFg3u_E6eHU
