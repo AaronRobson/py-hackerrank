@@ -4,7 +4,7 @@
 '''
 
 import os
-from typing import Dict, List, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
+from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
 from sys import maxsize
 from itertools import permutations
 
@@ -72,10 +72,7 @@ def shop(n: int, k: int, centers, roads) -> int:
     )
     current_min_cost = maxsize
     for potential_route in potential_routes:
-        cat_route_costs: List[int] = []
-        for cat_route in potential_route:
-            cat_route_cost = rf.find_route_costs(cat_route)
-            cat_route_costs.append(cat_route_cost)
+        cat_route_costs = map(rf.find_route_costs, potential_route)
         current_min_cost = min(current_min_cost, max(cat_route_costs))
     return current_min_cost
 
