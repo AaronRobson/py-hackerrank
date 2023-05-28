@@ -6,7 +6,7 @@
 import os
 from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
 from sys import maxsize
-from itertools import permutations
+from itertools import permutations, starmap
 
 
 def _pairwise(iterable):
@@ -141,9 +141,9 @@ class RouteFinder():
 
     def find_route_costs(self, cat_route: Iterable[int]) -> int:
         return sum(
-            self.find_route_cost(from_, to_)
-            for from_, to_ in pairwise(cat_route)
-        )
+            starmap(
+                self.find_route_cost,
+                pairwise(cat_route)))
 
     def dijkstra(self, *, from_: int) -> Dict[int, int]:
         '''https://www.youtube.com/watch?v=EFg3u_E6eHU
