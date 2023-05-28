@@ -137,7 +137,7 @@ class RouteFinder():
         self.cache: Cache = {}
 
     def find_route_cost(self, from_: int, to: int) -> int:
-        current_cache_value = self.cache.get(frozenset([from_, to]), None)
+        current_cache_value = self.cache.get(frozenset((from_, to)), None)
         if current_cache_value is not None:
             return current_cache_value
         return self.dijkstra(from_=from_)[to]
@@ -155,7 +155,7 @@ class RouteFinder():
         set_latest[from_].latest_cost = 0
 
         for to, node in set_latest.items():
-            current_frozen_set = frozenset([from_, to])
+            current_frozen_set = frozenset((from_, to))
             current_cache_value = self.cache.get(current_frozen_set, None)
             if current_cache_value is None:
                 continue
@@ -176,7 +176,7 @@ class RouteFinder():
             node_in_progress = _find_new_node_in_progress(set_latest)
 
         self.cache.update({
-            frozenset([from_, to]): value.latest_cost
+            frozenset((from_, to)): value.latest_cost
             for to, value in set_latest.items()
         })
         return {
