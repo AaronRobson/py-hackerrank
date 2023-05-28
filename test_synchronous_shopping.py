@@ -119,6 +119,39 @@ class TestShop(unittest.TestCase):
                 roads=roads),
             207)
 
+    def test_case_2(self):
+        n = 6
+        road_count = 5
+        k = 4
+        centers = [
+            '1 2',
+            '1 2',
+            '1 1',
+            '2 3 4',
+            '2 3 4',
+            '1 4',
+        ]
+        roads = [
+            [5, 4, 646],
+            [4, 1, 997],
+            [2, 1, 881],
+            [2, 6, 114],
+            [3, 1, 46],
+        ]
+        self.assertEqual(
+            len(centers),
+            n)
+        self.assertEqual(
+            len(roads),
+            road_count)
+        self.assertEqual(
+            shop(
+                n=n,
+                k=k,
+                centers=centers,
+                roads=roads),
+            2989)
+
     def test_case_6(self):
         n = 50
         road_count = 100

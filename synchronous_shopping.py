@@ -154,14 +154,6 @@ class RouteFinder():
         set_latest = {vertex: Node() for vertex in self.vertices}
         set_latest[from_].latest_cost = 0
 
-        for to, node in set_latest.items():
-            current_frozen_set = frozenset((from_, to))
-            current_cache_value = self.cache.get(current_frozen_set, None)
-            if current_cache_value is None:
-                continue
-            node.latest_cost = current_cache_value
-            node.explored = True
-
         node_in_progress: Optional[int] = from_
 
         while node_in_progress is not None:
