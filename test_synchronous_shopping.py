@@ -3465,6 +3465,8 @@ class TestRouteFinder(unittest.TestCase):
 class TestNode(unittest.TestCase):
     def test(self):
         a = Node()
+        with self.assertRaises(AttributeError, msg='use __slots__ on class'):
+            _ = a.__dict__
         self.assertEqual(a.latest_cost, maxsize)
         self.assertEqual(a.explored, False)
         a.latest_cost = 5

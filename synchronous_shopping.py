@@ -183,6 +183,8 @@ class RouteFinder():
 
 
 class Node():
+    __slots__ = ('latest_cost', 'explored')
+
     def __init__(self, *, latest_cost: int = maxsize, explored: bool = False):
         self.latest_cost = latest_cost
         self.explored = explored
