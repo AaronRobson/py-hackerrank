@@ -68,6 +68,7 @@ def shop(n: int, k: int, centers, roads) -> int:
         )
         for permutation in all_permutations_of_centers_with_early_exits
         for cat_1_route, cat_2_route in all_splits_in_two(permutation)
+        if cat_1_route < cat_2_route
     )
     current_min_cost = maxsize
     for potential_route in potential_routes:
