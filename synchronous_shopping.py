@@ -247,29 +247,26 @@ def all_splits_in_two(centers: Iterable[int]) -> Iterable[Tuple[Tuple[int, ...],
 
 
 if __name__ == '__main__':
-    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+    with open(os.environ['OUTPUT_PATH'], 'w') as fptr:
+        first_multiple_input = input().rstrip().split()
 
-    first_multiple_input = input().rstrip().split()
+        n = int(first_multiple_input[0])
 
-    n = int(first_multiple_input[0])
+        m = int(first_multiple_input[1])
 
-    m = int(first_multiple_input[1])
+        k = int(first_multiple_input[2])
 
-    k = int(first_multiple_input[2])
+        centers = []
 
-    centers = []
+        for _ in range(n):
+            centers_item = input()
+            centers.append(centers_item)
 
-    for _ in range(n):
-        centers_item = input()
-        centers.append(centers_item)
+        roads = []
 
-    roads = []
+        for _ in range(m):
+            roads.append(list(map(int, input().rstrip().split())))
 
-    for _ in range(m):
-        roads.append(list(map(int, input().rstrip().split())))
+        res = shop(n, k, centers, roads)
 
-    res = shop(n, k, centers, roads)
-
-    fptr.write(str(res) + '\n')
-
-    fptr.close()
+        fptr.write(str(res) + '\n')
