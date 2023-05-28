@@ -33,3 +33,7 @@ unittest: unittest-python
 .PHONY: unittest-python
 unittest-python:
 	python3 -m unittest -v $(testcase)
+
+.PHONY: run
+run:
+	python3 run_performance_check.py
