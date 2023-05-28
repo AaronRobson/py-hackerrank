@@ -134,12 +134,10 @@ class RouteFinder():
         self.cache: Cache = {}
 
     def find_route_cost(self, from_: int, to: int) -> int:
-        current_frozen_set = frozenset([from_, to])
-        current_cache_value = self.cache.get(current_frozen_set, None)
+        current_cache_value = self.cache.get(frozenset([from_, to]), None)
         if current_cache_value is not None:
             return current_cache_value
-        self.dijkstra(from_=from_)
-        return self.cache[current_frozen_set]
+        return self.dijkstra(from_=from_)[to]
 
     def find_route_costs(self, cat_route: Iterable[int]) -> int:
         return sum(
