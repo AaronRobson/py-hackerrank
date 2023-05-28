@@ -3,10 +3,11 @@
 '''https://www.hackerrank.com/challenges/synchronous-shopping/problem
 '''
 
+from collections import defaultdict
 import os
 from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
 from sys import maxsize
-from itertools import permutations, starmap
+from itertools import chain, permutations, product, starmap
 
 
 def _pairwise(iterable):
@@ -53,20 +54,22 @@ def shop(n: int, k: int, centers, roads) -> int:
         return rf.find_route_cost(starting_vertex, finishing_vertex)
 
     centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
+    fishes_we_need_to_centers = swap_centers_with_fish_we_need(centers_with_fish_we_need)
+    centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
 
-    all_permutations_of_centers = permutations(centers_with_fish_we_need.items())
-    all_permutations_of_centers_with_early_exits = (
-        stop_early_when_all_fish_are_found(
-            centers_permutation=centers_permutation,
-            fishes_we_need=fishes)
-        for centers_permutation in all_permutations_of_centers)
+    all_products_with_duplicates = product(*centers_to_choose_from_grouped_by_fishes)
+    all_products = (
+        tuple(dict.fromkeys(permutation))
+        for permutation in all_products_with_duplicates
+    )
+    all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
 
     potential_routes: Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]] = (
         (
             (starting_vertex,) + cat_1_route + (finishing_vertex,),
             (starting_vertex,) + cat_2_route + (finishing_vertex,),
         )
-        for permutation in all_permutations_of_centers_with_early_exits
+        for permutation in all_permutations_of_centers
         for cat_1_route, cat_2_route in all_splits_in_two(permutation)
         if cat_1_route < cat_2_route
     )
@@ -219,6 +222,17 @@ def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: Set[in
         center: fishes_of_center
         for center, fishes_of_center in centers.items()
         if not fishes_we_need.isdisjoint(fishes_of_center)
+    }
+
+
+def swap_centers_with_fish_we_need(centers_with_fish_we_need: Centers) -> Dict[int, FrozenSet[int]]:
+    fishes_we_need_to_centers = defaultdict(set)
+    for center, fishes in centers_with_fish_we_need.items():
+        for fish in fishes:
+            fishes_we_need_to_centers[fish].add(center)
+    return {
+        key: frozenset(value)
+        for key, value in fishes_we_need_to_centers.items()
     }
 
 

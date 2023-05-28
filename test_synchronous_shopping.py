@@ -119,7 +119,6 @@ class TestShop(unittest.TestCase):
                 roads=roads),
             207)
 
-    @unittest.skip('Takes too long at the moment')
     def test_case_6(self):
         n = 50
         road_count = 100
