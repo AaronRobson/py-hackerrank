@@ -70,11 +70,11 @@ def shop(n: int, k: int, centers, roads) -> int:
         for cat_1_route, cat_2_route in all_splits_in_two(permutation)
         if cat_1_route < cat_2_route
     )
-    current_min_cost = maxsize
-    for potential_route in potential_routes:
-        cat_route_costs = map(rf.find_route_costs, potential_route)
-        current_min_cost = min(current_min_cost, max(cat_route_costs))
-    return current_min_cost
+
+    def find_potential_route_cost(potential_route: Tuple[Tuple[int, ...], Tuple[int, ...]]) -> int:
+        return max(map(rf.find_route_costs, potential_route))
+
+    return min(map(find_potential_route_cost, potential_routes))
 
 
 def _one_to_n(n: int) -> Tuple[int, ...]:
