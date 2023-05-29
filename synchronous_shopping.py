@@ -286,12 +286,11 @@ def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[in
         fishes_we_have |= fishes_of_center
 
 
-def all_splits_in_two(centers: Iterable[int]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
-    centers_all = tuple(centers)
-    for i in range(0, len(centers_all) + 1):
+def all_splits_in_two(centers: Tuple[int, ...]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
+    for i in range(0, len(centers) + 1):
         yield (
-            centers_all[:i],
-            centers_all[i:],
+            centers[:i],
+            centers[i:],
         )
 
 

@@ -3503,7 +3503,7 @@ class TestRouteFinder(unittest.TestCase):
             rf.find_route_cost(5, 1),
             20,
             'end to start')
-        
+
         self.assertEqual(
             rf.find_route_costs([]),
             0,
