@@ -3499,12 +3499,15 @@ class TestNode(unittest.TestCase):
         a = Node()
         with self.assertRaises(AttributeError, msg='use __slots__ on class'):
             _ = a.__dict__
+        self.assertEqual(repr(a), 'Node()')
         self.assertEqual(a.latest_cost, maxsize)
         self.assertEqual(a.explored, False)
+        self.assertEqual(repr(a), 'Node()')
         a.latest_cost = 5
         a.explored = True
         self.assertEqual(a.latest_cost, 5)
         self.assertEqual(a.explored, True)
+        self.assertEqual(repr(a), 'Node(latest_cost=5, explored=True)')
 
 
 class TestFindDirectRoads(unittest.TestCase):
