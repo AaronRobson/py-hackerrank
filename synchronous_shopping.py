@@ -81,7 +81,9 @@ def shop(n: int, k: int, centers, roads) -> int:
     )
 
     def find_potential_route_cost(potential_route: Tuple[Tuple[int, ...], Tuple[int, ...]]) -> int:
-        return max(map(rf.find_route_costs, potential_route))
+        a = rf.find_route_costs(potential_route[0])
+        b = rf.find_route_costs(potential_route[1])
+        return a if a > b else b
 
     return min(map(find_potential_route_cost, potential_routes))
 
