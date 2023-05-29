@@ -3476,10 +3476,29 @@ class TestRouteFinder(unittest.TestCase):
                 Road(route={4, 5}, cost=10),
             ),
         )
+
         self.assertEqual(
             rf.find_route_cost(1, 5),
             20,
             'start to end')
+        # forward chain
+        self.assertIn(
+            frozenset((1, 2)),
+            rf.cache)
+        self.assertIn(
+            frozenset((1, 3)),
+            rf.cache)
+        self.assertIn(
+            frozenset((1, 4)),
+            rf.cache)
+        self.assertIn(
+            frozenset((1, 5)),
+            rf.cache)
+        # return chain
+        self.assertIn(
+            frozenset((5, 3)),
+            rf.cache)
+
         self.assertEqual(
             rf.find_route_cost(5, 1),
             20,
