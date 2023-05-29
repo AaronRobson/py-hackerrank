@@ -6,6 +6,14 @@
 from collections import defaultdict
 import os
 from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
+try:
+    # Requires python3.11+
+    # https://docs.python.org/3.11/library/typing.html#typing.Self
+    from typing import Self  # type: ignore[attr-defined]
+except ImportError:
+    from typing import TypeVar
+    # If other classes require this then this needs to change.
+    Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
 from itertools import chain, permutations, product, starmap
 
@@ -151,7 +159,7 @@ class RouteFinder():
     def dijkstra(self, *, from_: int) -> Dict[int, int]:
         '''https://www.youtube.com/watch?v=EFg3u_E6eHU
         '''
-        set_latest = {vertex: Node() for vertex in self.vertices}
+        set_latest = {vertex: Node(vertex=vertex) for vertex in self.vertices}
         set_latest[from_].latest_cost = 0
 
         node_in_progress: Optional[int] = from_
@@ -163,14 +171,35 @@ class RouteFinder():
                 this_cost = set_latest[node_in_progress].latest_cost + cost
                 if set_latest[to].latest_cost > this_cost:
                     set_latest[to].latest_cost = this_cost
+                    set_latest[to].previous_node = set_latest[node_in_progress]
 
             set_latest[node_in_progress].explored = True
             node_in_progress = _find_new_node_in_progress(set_latest)
 
+        # Update cache - 'from_' to every other node.
         self.cache.update({
             frozenset((from_, to)): value.latest_cost
             for to, value in set_latest.items()
         })
+
+        # Update cache from each target to all the others in the chain up to (but not including) 'from_'.
+        for to, value in set_latest.items():
+            if value.previous_routes_have_been_cached:
+                continue
+            node = value
+            route = []
+            while node.previous_node is not None:
+                route.append(node)
+                node = node.previous_node
+            while route:
+                finishing_node = route[0]
+                if finishing_node.previous_routes_have_been_cached:
+                    break
+                route = route[1:]
+                for item in route:
+                    self.cache[frozenset((finishing_node.vertex, item.vertex))] = finishing_node.latest_cost - item.latest_cost
+                    finishing_node.previous_routes_have_been_cached = True
+
         return {
             key: value.latest_cost
             for key, value in set_latest.items()
@@ -178,18 +207,40 @@ class RouteFinder():
 
 
 class Node():
-    __slots__ = ('latest_cost', 'explored')
+    __slots__ = (
+        'vertex',
+        'latest_cost',
+        'explored',
+        'previous_node',
+        'previous_routes_have_been_cached',
+    )
 
-    def __init__(self, *, latest_cost: int = maxsize, explored: bool = False):
+    def __init__(
+            self,
+            *,
+            vertex: int = 0,
+            latest_cost: int = maxsize,
+            explored: bool = False,
+            previous_node: Optional[Self] = None,
+            previous_routes_have_been_cached: bool = False):
+        self.vertex = vertex
         self.latest_cost = latest_cost
         self.explored = explored
+        self.previous_node = previous_node
+        self.previous_routes_have_been_cached = previous_routes_have_been_cached
 
     def __repr__(self):
         items = []
+        if self.vertex != 0:
+            items.append(f'vertex={self.vertex!r}')
         if self.latest_cost != maxsize:
             items.append(f'latest_cost={self.latest_cost!r}')
         if self.explored:
             items.append(f'explored={self.explored!r}')
+        if self.previous_node is not None:
+            items.append(f'previous_node_={self.previous_node!r}')
+        if self.previous_routes_have_been_cached:
+            items.append(f'previous_routes_have_been_cached={self.previous_routes_have_been_cached!r}')
         return f'{self.__class__.__name__}({", ".join(items)})'
 
 
