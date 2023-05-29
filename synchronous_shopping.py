@@ -18,21 +18,19 @@ from sys import maxsize
 from itertools import chain, permutations, product, starmap
 
 
-def _pairwise(iterable):
-    '''From: https://docs.python.org/3/library/itertools.html#itertools.pairwise
-    '''
-    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
-
 try:
     # Available in python3.11+
     from itertools import pairwise  # type: ignore[attr-defined]
 except ImportError:
     from itertools import tee
-    pairwise = _pairwise
+
+    def pairwise(iterable):
+        '''From: https://docs.python.org/3/library/itertools.html#itertools.pairwise
+        '''
+        # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+        a, b = tee(iterable)
+        next(b, None)
+        return zip(a, b)
 
 
 Cache = Dict[FrozenSet[int], int]
