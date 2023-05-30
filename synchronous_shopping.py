@@ -77,7 +77,6 @@ def shop(n: int, k: int, centers, roads) -> int:
         )
         for permutation in all_permutations_of_centers
         for cat_1_route, cat_2_route in all_splits_in_two(permutation)
-        if cat_1_route < cat_2_route
     )
 
     def find_potential_route_cost(potential_route: Tuple[Tuple[int, ...], Tuple[int, ...]]) -> int:
@@ -289,7 +288,7 @@ def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[in
 
 
 def all_splits_in_two(centers: Tuple[int, ...]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
-    for i in range(0, len(centers) + 1):
+    for i in range(len(centers)):
         yield (
             centers[:i],
             centers[i:],

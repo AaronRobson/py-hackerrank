@@ -3667,22 +3667,18 @@ class TestAllSplitsInTwo(unittest.TestCase):
                 (tuple(), (2, 3, 4)),
                 ((2,), (3, 4)),
                 ((2, 3), (4,)),
-                ((2, 3, 4), tuple()),
             ])
 
     def test_empty(self):
         self.assertEqual(
             list(all_splits_in_two(centers=tuple())),
-            [
-                (tuple(), tuple()),
-            ])
+            [])
 
     def test_one(self):
         self.assertEqual(
             list(all_splits_in_two(centers=(42,))),
             [
                 (tuple(), (42,)),
-                ((42,), tuple()),
             ])
 
     def test_two(self):
@@ -3691,7 +3687,44 @@ class TestAllSplitsInTwo(unittest.TestCase):
             [
                 (tuple(), (42, 43)),
                 ((42,), (43,)),
-                ((42, 43), tuple()),
+            ])
+
+    def test_three(self):
+        self.assertEqual(
+            list(all_splits_in_two(centers=(42, 43, 44))),
+            [
+                (tuple(), (42, 43, 44)),
+                ((42,), (43, 44,)),
+                ((42, 43), (44,)),
+            ])
+
+    def test_odd_palendromic(self):
+        self.assertEqual(
+            list(all_splits_in_two(centers=(1, 2, 1))),
+            [
+                (tuple(), (1, 2, 1)),
+                ((1,), (2, 1)),
+                ((1, 2), (1,)),
+            ])
+
+    def test_even_palendromic(self):
+        self.assertEqual(
+            list(all_splits_in_two(centers=(1, 2, 2, 1))),
+            [
+                (tuple(), (1, 2, 2, 1)),
+                ((1,), (2, 2, 1)),
+                ((1, 2), (2, 1,)),
+                ((1, 2, 2), (1,)),
+            ])
+
+    def test_even_pairs_repeated(self):
+        self.assertEqual(
+            list(all_splits_in_two(centers=(1, 2, 1, 2))),
+            [
+                (tuple(), (1, 2, 1, 2)),
+                ((1,), (2, 1, 2)),
+                ((1, 2), (1, 2,)),
+                ((1, 2, 1), (2,)),
             ])
 
 
