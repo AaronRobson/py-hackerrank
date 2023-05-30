@@ -142,6 +142,7 @@ class RouteFinder():
 
     def reset_cache(self):
         self.cache: Cache = {}
+        self.cache_route = {}
 
     def find_route_cost(self, from_: int, to: int) -> int:
         try:
@@ -149,11 +150,16 @@ class RouteFinder():
         except KeyError:
             return self.dijkstra(from_=from_)[to]
 
-    def find_route_costs(self, cat_route: Iterable[int]) -> int:
-        return sum(
-            starmap(
-                self.find_route_cost,
-                pairwise(cat_route)))
+    def find_route_costs(self, cat_route: Tuple[int, ...]) -> int:
+        try:
+            return self.cache_route[cat_route]
+        except KeyError:
+            cost = sum(
+                starmap(
+                    self.find_route_cost,
+                    pairwise(cat_route)))
+            self.cache_route[cat_route] = cost
+            return cost
 
     def dijkstra(self, *, from_: int) -> Dict[int, int]:
         '''https://www.youtube.com/watch?v=EFg3u_E6eHU
