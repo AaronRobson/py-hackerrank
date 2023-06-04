@@ -64,8 +64,8 @@ def shop(n: int, k: int, centers, roads) -> int:
     centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
 
     all_products_with_duplicates = product(*centers_to_choose_from_grouped_by_fishes)
-    all_products = (
-        tuple(dict.fromkeys(permutation))
+    all_products = set(
+        frozenset(dict.fromkeys(permutation))
         for permutation in all_products_with_duplicates
     )
     all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
