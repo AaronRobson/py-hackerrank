@@ -135,6 +135,13 @@ def dijkstra(vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) -> 
 
 
 class RouteFinder():
+    __slots__ = (
+        'vertices',
+        'edges',
+        'cache',
+        'cache_route',
+    )
+
     def __init__(self, vertices: Tuple[int, ...], edges: Tuple[Road, ...]):
         self.vertices = vertices
         self.edges = edges
