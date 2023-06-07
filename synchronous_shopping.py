@@ -33,7 +33,7 @@ except ImportError:
         return zip(a, b)
 
 
-Cache = Dict[FrozenSet[int], int]
+Cache = Dict[Tuple[int, int], int]
 Center = int
 Centers = Dict[Center, Set[int]]
 
@@ -65,7 +65,7 @@ def shop(n: int, k: int, centers, roads) -> int:
 
     all_products_with_duplicates = product(*centers_to_choose_from_grouped_by_fishes)
     all_products = set(
-        frozenset(dict.fromkeys(permutation))
+        tuple(dict.fromkeys(permutation))
         for permutation in all_products_with_duplicates
     )
     all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
@@ -153,7 +153,7 @@ class RouteFinder():
 
     def find_route_cost(self, from_: int, to: int) -> int:
         try:
-            return self.cache[frozenset((from_, to))]
+            return self.cache[(from_, to)]
         except KeyError:
             return self.dijkstra(from_=from_)[to]
 
@@ -190,7 +190,11 @@ class RouteFinder():
 
         # Update cache - 'from_' to every other node.
         self.cache.update({
-            frozenset((from_, to)): value.latest_cost
+            (from_, to): value.latest_cost
+            for to, value in set_latest.items()
+        })
+        self.cache.update({
+            (to, from_): value.latest_cost
             for to, value in set_latest.items()
         })
 
@@ -209,7 +213,9 @@ class RouteFinder():
                     break
                 route = route[1:]
                 for item in route:
-                    self.cache[frozenset((finishing_node.vertex, item.vertex))] = finishing_node.latest_cost - item.latest_cost
+                    cost = finishing_node.latest_cost - item.latest_cost
+                    self.cache[(finishing_node.vertex, item.vertex)] = cost
+                    self.cache[(item.vertex, finishing_node.vertex)] = cost
                     finishing_node.previous_routes_have_been_cached = True
 
         return {

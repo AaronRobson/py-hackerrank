@@ -6106,20 +6106,35 @@ class TestRouteFinder(unittest.TestCase):
             'start to end')
         # forward chain
         self.assertIn(
-            frozenset((1, 2)),
+            (1, 2),
             rf.cache)
         self.assertIn(
-            frozenset((1, 3)),
+            (2, 1),
             rf.cache)
         self.assertIn(
-            frozenset((1, 4)),
+            (1, 3),
             rf.cache)
         self.assertIn(
-            frozenset((1, 5)),
+            (3, 1),
+            rf.cache)
+        self.assertIn(
+            (1, 4),
+            rf.cache)
+        self.assertIn(
+            (4, 1),
+            rf.cache)
+        self.assertIn(
+            (1, 5),
+            rf.cache)
+        self.assertIn(
+            (5, 1),
             rf.cache)
         # return chain
         self.assertIn(
-            frozenset((5, 3)),
+            (5, 3),
+            rf.cache)
+        self.assertIn(
+            (3, 5),
             rf.cache)
 
         self.assertEqual(
