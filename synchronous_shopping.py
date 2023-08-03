@@ -4,6 +4,7 @@
 '''
 
 from collections import defaultdict
+import logging
 import os
 from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
 try:
@@ -33,6 +34,8 @@ except ImportError:
         return zip(a, b)
 
 
+logging.basicConfig(level=logging.DEBUG)
+
 Cache = Dict[Tuple[int, int], int]
 Center = int
 Centers = Dict[Center, Set[int]]
@@ -57,17 +60,21 @@ def shop(n: int, k: int, centers, roads) -> int:
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
+        logging.debug('no extra fishes required')
         return rf.find_route_cost(starting_vertex, finishing_vertex)
+    logging.debug('extra fishes required')
 
     centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
     fishes_we_need_to_centers = swap_centers_with_fish_we_need(centers_with_fish_we_need)
     centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
+    logging.debug('centers_to_choose_from_grouped_by_fishes=%r', centers_to_choose_from_grouped_by_fishes)
 
     all_products_with_duplicates = product(*centers_to_choose_from_grouped_by_fishes)
     all_products = set(
         tuple(dict.fromkeys(permutation))
         for permutation in all_products_with_duplicates
     )
+    logging.debug('all_products=%r', all_products)
     all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
 
     potential_routes: Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]] = (
