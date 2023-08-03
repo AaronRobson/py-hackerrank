@@ -16,7 +16,7 @@ except ImportError:
     # If other classes require this then this needs to change.
     Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
-from itertools import chain, permutations, product, starmap
+from itertools import chain, permutations, product
 
 
 try:
