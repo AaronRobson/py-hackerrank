@@ -121,10 +121,6 @@ class Road(NamedTuple):
 
 Route = Road
 
-# class RoadFrom(NamedTuple):
-#     to_: int
-#     cost: int  # Expected to not be negative.
-
 
 def parse_roads(roads) -> Tuple[Road, ...]:
     return tuple(
