@@ -56,7 +56,8 @@ def shop(n: int, k: int, centers, roads) -> int:
 
     rf = RouteFinder(
         vertices=vertices,
-        edges=roads)
+        edges=roads,
+        important_vertices=tuple({*{1, n}, *set(vertex for vertex, fishes in centers.items() if fishes)}))
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
@@ -145,28 +146,25 @@ class RouteFinder():
         'cache_route',
     )
 
-    def __init__(self, vertices: Tuple[int, ...], edges: Tuple[Road, ...]):
+    def __init__(self, vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, important_vertices: Optional[Tuple[int, ...]] = None):
         self.vertices = vertices
         self.edges = edges
-        self.reset_cache()
-
-    def reset_cache(self):
         self.cache: Cache = {}
-        self.cache_route = {}
+        important_vertices = important_vertices or vertices
+        for vertex in important_vertices:
+            self.dijkstra(from_=vertex)
+        self.cache_route: Dict[Tuple[int, ...], int] = {}
 
     def find_route_cost(self, from_: int, to: int) -> int:
-        try:
-            return self.cache[(from_, to)]
-        except KeyError:
-            return self.dijkstra(from_=from_)[to]
+        return self.cache[(from_, to)]
 
     def find_route_costs(self, cat_route: Tuple[int, ...]) -> int:
         try:
             return self.cache_route[cat_route]
         except KeyError:
             cost = sum(
-                starmap(
-                    self.find_route_cost,
+                map(
+                    self.cache.__getitem__,
                     pairwise(cat_route)))
             self.cache_route[cat_route] = cost
             return cost
