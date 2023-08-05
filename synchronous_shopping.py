@@ -72,12 +72,13 @@ def shop(n: int, k: int, centers, roads) -> int:
     centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
     logging.debug('centers_to_choose_from_grouped_by_fishes=%r', centers_to_choose_from_grouped_by_fishes)
 
-    all_products_with_duplicates = product(*centers_to_choose_from_grouped_by_fishes)
+    all_products_with_duplicates = tuple(product(*centers_to_choose_from_grouped_by_fishes))
+    logging.debug('all_products_with_duplicates(len=%d)=%r', len(all_products_with_duplicates), all_products_with_duplicates)
     all_products = set(
         tuple(dict.fromkeys(permutation))
         for permutation in all_products_with_duplicates
     )
-    logging.debug('all_products=%r', all_products)
+    logging.debug('all_products(len=%d)=%r', len(all_products), all_products)
     all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
 
     route_cache = {}
