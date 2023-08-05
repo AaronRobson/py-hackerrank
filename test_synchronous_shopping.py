@@ -6308,6 +6308,15 @@ class TestAllSplitsInTwo(unittest.TestCase):
                 ((2, 3), (4,)),
             ])
 
+    def test_sample_test_case_0_reversed(self):
+        self.assertEqual(
+            list(all_splits_in_two(centers=(4, 3, 2))),
+            [
+                (tuple(), (4, 3, 2)),
+                ((4,), (3, 2)),
+                ((4, 3), (2,)),
+            ])
+
     def test_empty(self):
         self.assertEqual(
             list(all_splits_in_two(centers=tuple())),
