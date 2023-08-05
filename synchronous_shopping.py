@@ -79,22 +79,17 @@ def shop(n: int, k: int, centers, roads) -> int:
     logging.debug('all_products=%r', all_products)
     all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
 
-    potential_routes: Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]] = (
+    route_cache = {}
+    potential_route_costs: Iterable[Tuple[int, int]] = (
         (
-            (starting_vertex,) + cat_1_route + (finishing_vertex,),
-            (starting_vertex,) + cat_2_route + (finishing_vertex,),
+            find_route_costs(cache=cache, route_cache=route_cache, route=(starting_vertex,) + cat_1_route + (finishing_vertex,)),
+            find_route_costs(cache=cache, route_cache=route_cache, route=(starting_vertex,) + cat_2_route + (finishing_vertex,)),
         )
         for permutation in all_permutations_of_centers
         for cat_1_route, cat_2_route in all_splits_in_two(permutation)
     )
 
-    route_cache = {}
-    def find_potential_route_cost(potential_route: Tuple[Tuple[int, ...], Tuple[int, ...]]) -> int:
-        a = find_route_costs(cache=cache, route_cache=route_cache, route=potential_route[0])
-        b = find_route_costs(cache=cache, route_cache=route_cache, route=potential_route[1])
-        return a if a > b else b
-
-    return min(map(find_potential_route_cost, potential_routes))
+    return min(map(max, potential_route_costs))
 
 
 def _one_to_n(n: int) -> Tuple[int, ...]:
