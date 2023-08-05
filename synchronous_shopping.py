@@ -177,6 +177,7 @@ def route_finder(vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, importan
         cache.update({
             (from_, to_): cost
             for to_, cost in dijkstra(vertices=vertices, edges=edges, from_=from_).items()
+            if to_ in important_vertices
         })
     return cache
 
