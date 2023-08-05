@@ -59,6 +59,7 @@ def shop(n: int, k: int, centers, roads) -> int:
         vertices=vertices,
         edges=roads,
         important_vertices=tuple({*{1, n}, *set(vertex for vertex, fishes in centers.items() if fishes)}))
+    logging.debug('cache(len=%d)=%r', len(cache), cache)
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
@@ -177,7 +178,7 @@ def route_finder(vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, importan
         cache.update({
             (from_, to_): cost
             for to_, cost in dijkstra(vertices=vertices, edges=edges, from_=from_).items()
-            if to_ in important_vertices
+            if from_ != to_ and to_ in important_vertices
         })
     return cache
 
