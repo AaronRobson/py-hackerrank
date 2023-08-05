@@ -9,7 +9,8 @@ from synchronous_shopping import (
     parse_roads,
     Node,
     dijkstra,
-    RouteFinder,
+    route_finder,
+    find_route_costs,
     _find_direct_roads,
     _find_new_node_in_progress,
     find_centers_with_fishes_we_need,
@@ -6089,7 +6090,7 @@ class TestDijkstra(unittest.TestCase):
 
 class TestRouteFinder(unittest.TestCase):
     def test_sample_test_case_0(self):
-        rf = RouteFinder(
+        cache = route_finder(
             vertices=(1, 2, 3, 4, 5),
             edges=(
                 Road(route={1, 2}, cost=10),
@@ -6101,59 +6102,59 @@ class TestRouteFinder(unittest.TestCase):
         )
 
         self.assertEqual(
-            rf.find_route_cost(1, 5),
+            cache[(1, 5)],
             20,
             'start to end')
         # forward chain
         self.assertIn(
             (1, 2),
-            rf.cache)
+            cache)
         self.assertIn(
             (2, 1),
-            rf.cache)
+            cache)
         self.assertIn(
             (1, 3),
-            rf.cache)
+            cache)
         self.assertIn(
             (3, 1),
-            rf.cache)
+            cache)
         self.assertIn(
             (1, 4),
-            rf.cache)
+            cache)
         self.assertIn(
             (4, 1),
-            rf.cache)
+            cache)
         self.assertIn(
             (1, 5),
-            rf.cache)
+            cache)
         self.assertIn(
             (5, 1),
-            rf.cache)
+            cache)
         # return chain
         self.assertIn(
             (5, 3),
-            rf.cache)
+            cache)
         self.assertIn(
             (3, 5),
-            rf.cache)
+            cache)
 
         self.assertEqual(
-            rf.find_route_cost(5, 1),
+            cache[(5, 1)],
             20,
             'end to start')
 
         self.assertEqual(
-            rf.find_route_costs(tuple()),
+            find_route_costs(cache=cache, route_cache={}, route=tuple()),
             0,
             'empty route')
 
         self.assertEqual(
-            rf.find_route_costs((1, 5, 1)),
+            find_route_costs(cache=cache, route_cache={}, route=(1, 5, 1)),
             40,
             'start to end and back to start')
 
         self.assertEqual(
-            rf.find_route_costs((1, 4, 5)),
+            find_route_costs(cache=cache, route_cache={}, route=(1, 4, 5)),
             30,
             'start to end but the long way')
 

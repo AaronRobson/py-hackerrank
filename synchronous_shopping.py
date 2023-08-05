@@ -4,6 +4,7 @@
 '''
 
 from collections import defaultdict
+import functools
 import logging
 import os
 from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
@@ -54,7 +55,7 @@ def shop(n: int, k: int, centers, roads) -> int:
     centers = parse_centers(centers)
     roads = parse_roads(roads)
 
-    rf = RouteFinder(
+    cache = route_finder(
         vertices=vertices,
         edges=roads,
         important_vertices=tuple({*{1, n}, *set(vertex for vertex, fishes in centers.items() if fishes)}))
@@ -62,7 +63,7 @@ def shop(n: int, k: int, centers, roads) -> int:
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
         logging.debug('no extra fishes required')
-        return rf.find_route_cost(starting_vertex, finishing_vertex)
+        return cache[(starting_vertex, finishing_vertex)]
     logging.debug('extra fishes required')
 
     centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
@@ -87,9 +88,10 @@ def shop(n: int, k: int, centers, roads) -> int:
         for cat_1_route, cat_2_route in all_splits_in_two(permutation)
     )
 
+    route_cache = {}
     def find_potential_route_cost(potential_route: Tuple[Tuple[int, ...], Tuple[int, ...]]) -> int:
-        a = rf.find_route_costs(potential_route[0])
-        b = rf.find_route_costs(potential_route[1])
+        a = find_route_costs(cache=cache, route_cache=route_cache, route=potential_route[0])
+        b = find_route_costs(cache=cache, route_cache=route_cache, route=potential_route[1])
         return a if a > b else b
 
     return min(map(find_potential_route_cost, potential_routes))
@@ -129,100 +131,71 @@ def parse_roads(roads) -> Tuple[Road, ...]:
         for road in roads)
 
 
-def dijkstra(vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
-    '''This will not be able to use the cache on subsequent calls.
+def dijkstra(*, vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
+    '''https://www.youtube.com/watch?v=EFg3u_E6eHU
     '''
-    return RouteFinder(
-        vertices=vertices,
-        edges=edges,
-    ).dijkstra(from_=from_)
+    set_latest = {vertex: Node(vertex=vertex) for vertex in vertices}
+    set_latest[from_].latest_cost = 0
 
+    node_in_progress: Optional[int] = from_
 
-class RouteFinder():
-    __slots__ = (
-        'vertices',
-        'edges',
-        'cache',
-        'cache_route',
-    )
-
-    def __init__(self, vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, important_vertices: Optional[Tuple[int, ...]] = None):
-        self.vertices = vertices
-        self.edges = edges
-        self.cache: Cache = {}
-        important_vertices = important_vertices or vertices
-        for vertex in important_vertices:
-            self.dijkstra(from_=vertex)
-        self.cache_route: Dict[Tuple[int, ...], int] = {}
-
-    def find_route_cost(self, from_: int, to: int) -> int:
-        return self.cache[(from_, to)]
-
-    def find_route_costs(self, cat_route: Tuple[int, ...]) -> int:
-        try:
-            return self.cache_route[cat_route]
-        except KeyError:
-            cost = sum(
-                map(
-                    self.cache.__getitem__,
-                    pairwise(cat_route)))
-            self.cache_route[cat_route] = cost
-            return cost
-
-    def dijkstra(self, *, from_: int) -> Dict[int, int]:
-        '''https://www.youtube.com/watch?v=EFg3u_E6eHU
-        '''
-        set_latest = {vertex: Node(vertex=vertex) for vertex in self.vertices}
-        set_latest[from_].latest_cost = 0
-
-        node_in_progress: Optional[int] = from_
-
-        while node_in_progress is not None:
-            for to, cost in _find_direct_roads(edges=self.edges, from_=node_in_progress).items():
-                if set_latest[to].explored:
-                    continue
-                this_cost = set_latest[node_in_progress].latest_cost + cost
-                if set_latest[to].latest_cost > this_cost:
-                    set_latest[to].latest_cost = this_cost
-                    set_latest[to].previous_node = set_latest[node_in_progress]
-
-            set_latest[node_in_progress].explored = True
-            node_in_progress = _find_new_node_in_progress(set_latest)
-
-        # Update cache - 'from_' to every other node.
-        self.cache.update({
-            (from_, to): value.latest_cost
-            for to, value in set_latest.items()
-        })
-        self.cache.update({
-            (to, from_): value.latest_cost
-            for to, value in set_latest.items()
-        })
-
-        # Update cache from each target to all the others in the chain up to (but not including) 'from_'.
-        for to, value in set_latest.items():
-            if value.previous_routes_have_been_cached:
+    while node_in_progress is not None:
+        for to, cost in _find_direct_roads(edges=edges, from_=node_in_progress).items():
+            if set_latest[to].explored:
                 continue
-            node = value
-            route = []
-            while node.previous_node is not None:
-                route.append(node)
-                node = node.previous_node
-            while route:
-                finishing_node = route[0]
-                if finishing_node.previous_routes_have_been_cached:
-                    break
-                route = route[1:]
-                for item in route:
-                    cost = finishing_node.latest_cost - item.latest_cost
-                    self.cache[(finishing_node.vertex, item.vertex)] = cost
-                    self.cache[(item.vertex, finishing_node.vertex)] = cost
-                    finishing_node.previous_routes_have_been_cached = True
+            this_cost = set_latest[node_in_progress].latest_cost + cost
+            if set_latest[to].latest_cost > this_cost:
+                set_latest[to].latest_cost = this_cost
+                set_latest[to].previous_node = set_latest[node_in_progress]
 
-        return {
-            key: value.latest_cost
-            for key, value in set_latest.items()
-        }
+        set_latest[node_in_progress].explored = True
+        node_in_progress = _find_new_node_in_progress(set_latest)
+
+    # Update cache from each target to all the others in the chain up to (but not including) 'from_'.
+    for to, value in set_latest.items():
+        if value.previous_routes_have_been_cached:
+            continue
+        node = value
+        route = []
+        while node.previous_node is not None:
+            route.append(node)
+            node = node.previous_node
+        while route:
+            finishing_node = route[0]
+            if finishing_node.previous_routes_have_been_cached:
+                break
+            route = route[1:]
+            for item in route:
+                cost = finishing_node.latest_cost - item.latest_cost
+                finishing_node.previous_routes_have_been_cached = True
+
+    return {
+        key: value.latest_cost
+        for key, value in set_latest.items()
+    }
+
+
+def route_finder(vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, important_vertices: Optional[Tuple[int, ...]] = None) -> Cache:
+    important_vertices = important_vertices or vertices
+    cache: Cache = {}
+    for from_ in important_vertices:
+        cache.update({
+            (from_, to_): cost
+            for to_, cost in dijkstra(vertices=vertices, edges=edges, from_=from_).items()
+        })
+    return cache
+
+
+def find_route_costs(*, cache: Cache, route_cache, route: Tuple[int, ...]) -> int:
+    try:
+        return route_cache[route]
+    except KeyError:
+        cost = sum(
+            map(
+                cache.__getitem__,
+                pairwise(route)))
+        route_cache[route] = cost
+        return cost
 
 
 class Node():
