@@ -6655,7 +6655,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(2, 3, 4))),
             [
-                (tuple(), (2, 3, 4)),
                 ((2,), (3, 4)),
                 ((2, 3), (4,)),
             ])
@@ -6664,7 +6663,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(4, 3, 2))),
             [
-                (tuple(), (4, 3, 2)),
                 ((4,), (3, 2)),
                 ((4, 3), (2,)),
             ])
@@ -6685,7 +6683,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(42, 43))),
             [
-                (tuple(), (42, 43)),
                 ((42,), (43,)),
             ])
 
@@ -6693,7 +6690,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(42, 43, 44))),
             [
-                (tuple(), (42, 43, 44)),
                 ((42,), (43, 44,)),
                 ((42, 43), (44,)),
             ])
@@ -6702,7 +6698,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(1, 2, 1))),
             [
-                (tuple(), (1, 2, 1)),
                 ((1,), (2, 1)),
                 ((1, 2), (1,)),
             ])
@@ -6711,7 +6706,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(1, 2, 2, 1))),
             [
-                (tuple(), (1, 2, 2, 1)),
                 ((1,), (2, 2, 1)),
                 ((1, 2), (2, 1,)),
                 ((1, 2, 2), (1,)),
@@ -6721,7 +6715,6 @@ class TestAllSplitsInTwo(unittest.TestCase):
         self.assertEqual(
             list(all_splits_in_two(centers=(1, 2, 1, 2))),
             [
-                (tuple(), (1, 2, 1, 2)),
                 ((1,), (2, 1, 2)),
                 ((1, 2), (1, 2,)),
                 ((1, 2, 1), (2,)),
