@@ -16,6 +16,7 @@ from synchronous_shopping import (
     _find_new_node_in_progress,
     find_centers_with_fishes_we_need,
     stop_early_when_all_fish_are_found,
+    split_at,
     all_splits_in_two,
 )
 
@@ -6648,6 +6649,16 @@ class TestStopEarlyWhenAllFishAreFound(unittest.TestCase):
                 fishes_we_need=set(),
             )),
             [])
+
+
+class TestSplitAt(unittest.TestCase):
+    def test(self):
+        self.assertEqual(
+            list(split_at(n=2, values=(1, 2, 3, 4, 5))),
+            [
+                (1, 2),
+                (3, 4, 5),
+            ])
 
 
 class TestAllSplitsInTwo(unittest.TestCase):

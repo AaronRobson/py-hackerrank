@@ -4,9 +4,10 @@
 '''
 
 from collections import defaultdict
+from functools import partial
 import logging
 import os
-from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable, Sequence
+from typing import Any, Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable, Sequence
 try:
     # Requires python3.11+
     # https://docs.python.org/3.11/library/typing.html#typing.Self
@@ -312,13 +313,17 @@ def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[in
         fishes_we_have |= fishes_of_center
 
 
+def split_at(n: int, values: Tuple[Any]) -> Tuple[Tuple[Any], Tuple[Any]]:
+    return (
+        values[:n],
+        values[n:],
+    )
+
+
 def all_splits_in_two(centers: Tuple[int, ...]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
     length = len(centers)
-    for i in range(1 if length > 1 else 0, length):
-        yield (
-            centers[:i],
-            centers[i:],
-        )
+    f = partial(split_at, values=centers)
+    return map(f, range(1 if length > 1 else 0, length))
 
 
 if __name__ == '__main__':
