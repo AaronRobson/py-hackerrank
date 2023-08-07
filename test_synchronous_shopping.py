@@ -2,6 +2,7 @@ import unittest
 from sys import maxsize
 
 from synchronous_shopping import (
+    choose_all_combinations_of_centers,
     shop,
     parse_vertices,
     parse_centers,
@@ -17,6 +18,134 @@ from synchronous_shopping import (
     stop_early_when_all_fish_are_found,
     all_splits_in_two,
 )
+
+
+class TestChooseAllCombinationsOfCenters(unittest.TestCase):
+    def test_empty(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({}),
+            {
+                tuple(),
+            })
+
+    def test_single_empty_item(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({}),
+            }),
+            {
+                tuple(),
+            })
+
+    def test_single_item(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1}),
+            }),
+            {
+                (1,),
+            })
+
+    def test_multiple_of_same_item(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1}),
+                frozenset({1}),
+            }),
+            {
+                (1,),
+            })
+
+    def test_multiple_single_items(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1}),
+                frozenset({2}),
+            }),
+            {
+                (1, 2),
+                (2, 1),
+            })
+
+    def test_mutually_exclusive_items_unequal_lengths(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1}),
+                frozenset({2, 3}),
+            }),
+            {
+                (1, 2),
+                (1, 3),
+                (2, 1),
+                (3, 1),
+            })
+
+    def test_mutually_exclusive_items_equal_lengths(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1, 2}),
+                frozenset({3, 4}),
+            }),
+            {
+                (1, 3),
+                (1, 4),
+                (2, 3),
+                (2, 4),
+                (3, 1),
+                (3, 2),
+                (4, 1),
+                (4, 2),
+            })
+
+    def test_partially_exclusive_items(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1, 2}),
+                frozenset({2, 3}),
+            }),
+            {
+                (1, 3),
+                (2,),
+                (3, 1),
+            })
+
+    def test_mutually_inclusive_items(self):
+        '''https://hypothesis.readthedocs.io/en/latest/examples.html#condorcet-s-paradox
+        '''
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1, 2}),
+                frozenset({2, 3}),
+                frozenset({3, 1}),
+            }),
+            {
+                (1, 2),
+                (1, 3),
+                (2, 3),
+                (2, 1),
+                (3, 1),
+                (3, 2),
+            })
+
+    def test_avoid_extra(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1}),
+                frozenset({1, 2}),
+            }),
+            {
+                (1,),
+            })
+
+    def test_avoid_extra_reversed(self):
+        self.assertEqual(
+            choose_all_combinations_of_centers({
+                frozenset({1, 2}),
+                frozenset({1}),
+            }),
+            {
+                (1,),
+            })
 
 
 class TestShop(unittest.TestCase):

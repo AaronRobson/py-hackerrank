@@ -4,10 +4,9 @@
 '''
 
 from collections import defaultdict
-import functools
 import logging
 import os
-from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable
+from typing import Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable, Sequence
 try:
     # Requires python3.11+
     # https://docs.python.org/3.11/library/typing.html#typing.Self
@@ -17,7 +16,7 @@ except ImportError:
     # If other classes require this then this needs to change.
     Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
-from itertools import chain, permutations, product
+from itertools import chain, permutations
 
 
 try:
@@ -40,6 +39,47 @@ logging.basicConfig(level=logging.DEBUG)
 Cache = Dict[Tuple[int, int], int]
 Center = int
 Centers = Dict[Center, Set[int]]
+
+
+def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable[Tuple[int, ...]]:
+    '''Not all combinations.
+    '''
+    values = list(values)
+    min_value_length = min(map(len, values), default=0)
+    has_been_done = set()
+    exists = False
+    for value in filter(lambda v: len(v) == min_value_length, values):
+        for item in value:
+            if item in has_been_done:
+                continue
+            has_been_done.add(item)
+
+            new_values = [
+                new_value
+                for new_value in values
+                if item not in new_value
+            ]
+            for combination in _choose_combinations_of_centers(new_values):
+                exists = True
+                yield (item,) + combination
+    if not exists:
+        # There is only one way to choose no centers.
+        yield tuple()
+
+
+def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> Set[Tuple[int, ...]]:
+    combinations = set(map(frozenset, _choose_combinations_of_centers(values)))
+
+    new_combinations = set()
+    for combination in combinations:
+        for other in combinations:
+            if combination > other:
+                break
+        else:
+            new_combinations.add(combination)
+    combinations = new_combinations
+
+    return set(chain.from_iterable(map(permutations, combinations)))
 
 
 def shop(n: int, k: int, centers, roads) -> int:
@@ -72,14 +112,8 @@ def shop(n: int, k: int, centers, roads) -> int:
     centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
     logging.debug('centers_to_choose_from_grouped_by_fishes=%r', centers_to_choose_from_grouped_by_fishes)
 
-    all_products_with_duplicates = tuple(product(*centers_to_choose_from_grouped_by_fishes))
-    logging.debug('all_products_with_duplicates(len=%d)=%r', len(all_products_with_duplicates), all_products_with_duplicates)
-    all_products = set(
-        tuple(dict.fromkeys(permutation))
-        for permutation in all_products_with_duplicates
-    )
-    logging.debug('all_products(len=%d)=%r', len(all_products), all_products)
-    all_permutations_of_centers: Iterable[Tuple[int, ...]] = chain.from_iterable(map(permutations, all_products))
+    all_permutations_of_centers = list(choose_all_combinations_of_centers(centers_to_choose_from_grouped_by_fishes))
+    logging.debug('all_permutations_of_centers(len=%d)=%r', len(all_permutations_of_centers), all_permutations_of_centers)
 
     route_cache = {}
     potential_route_costs: Iterable[Tuple[int, int]] = (
