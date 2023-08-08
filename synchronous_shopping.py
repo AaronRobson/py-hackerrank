@@ -20,12 +20,12 @@ except ImportError:
     Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
 from itertools import chain, permutations
+import sys
 
 
-try:
-    # Available in python3.11+
+if sys.version_info[:2] >= (3, 11):
     from itertools import pairwise  # type: ignore[attr-defined]
-except ImportError:
+else:
     from itertools import tee
 
     def pairwise(iterable):
