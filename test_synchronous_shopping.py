@@ -6514,7 +6514,7 @@ class TestRouteFinder(unittest.TestCase):
 
 class TestNode(unittest.TestCase):
     def test(self):
-        a = Node()
+        a = Node(vertex=0)
         with self.assertRaises(AttributeError, msg='use __slots__ on class'):
             _ = a.__dict__
         self.assertEqual(
@@ -6558,9 +6558,9 @@ class TestFindNewNodeInProgress(unittest.TestCase):
         self.assertEqual(
             _find_new_node_in_progress(
                 {
-                    1: Node(latest_cost=0),
-                    2: Node(),
-                    3: Node(),
+                    1: Node(vertex=1, latest_cost=0),
+                    2: Node(vertex=2),
+                    3: Node(vertex=3),
                 }
             ),
             1,
@@ -6570,9 +6570,9 @@ class TestFindNewNodeInProgress(unittest.TestCase):
         self.assertEqual(
             _find_new_node_in_progress(
                 {
-                    1: Node(latest_cost=0, explored=True),
-                    2: Node(latest_cost=10),
-                    3: Node(),
+                    1: Node(vertex=1, latest_cost=0, explored=True),
+                    2: Node(vertex=2, latest_cost=10),
+                    3: Node(vertex=3),
                 }
             ),
             2,
@@ -6582,9 +6582,9 @@ class TestFindNewNodeInProgress(unittest.TestCase):
         self.assertIn(
             _find_new_node_in_progress(
                 {
-                    1: Node(latest_cost=0, explored=True),
-                    2: Node(latest_cost=10),
-                    3: Node(latest_cost=10),
+                    1: Node(vertex=1, latest_cost=0, explored=True),
+                    2: Node(vertex=2, latest_cost=10),
+                    3: Node(vertex=3, latest_cost=10),
                 }
             ),
             [2, 3],

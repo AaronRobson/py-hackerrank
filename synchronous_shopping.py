@@ -8,6 +8,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from functools import partial
 import logging
+from operator import attrgetter
 import os
 from typing import Any, Optional, NamedTuple
 try:
@@ -19,7 +20,7 @@ except ImportError:
     # If other classes require this then this needs to change.
     Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
-from itertools import chain, permutations
+from itertools import chain, filterfalse, permutations
 import sys
 
 
@@ -237,7 +238,7 @@ def find_route_costs(*, cache: Cache, route_cache: RouteCache, route: tuple[int,
 
 @dataclass(init=True, repr=True, kw_only=True, slots=True)
 class Node():
-    vertex: int = 0
+    vertex: int
     latest_cost: int = maxsize
     explored: bool = False
     previous_node: Optional[Self] = None
@@ -253,11 +254,10 @@ def _find_direct_roads(*, edges: tuple[Road, ...], from_: int) -> dict[int, int]
     return output
 
 
-def _find_new_node_in_progress(set_latest) -> Optional[int]:
-    unexplored = [(key, value) for key, value in set_latest.items() if not value.explored]
-    if not unexplored:
-        return None
-    return min(unexplored, key=lambda item: item[1].latest_cost)[0]
+def _find_new_node_in_progress(set_latest: dict[int, Node]) -> Optional[int]:
+    unexplored = filterfalse(attrgetter('explored'), set_latest.values())
+    min_node = min(unexplored, key=attrgetter('latest_cost'), default=None)
+    return min_node.vertex if min_node is not None else None
 
 
 def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: set[int]) -> Centers:
