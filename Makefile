@@ -14,15 +14,19 @@ install-packages:
 	  -r requirements.txt
 
 .PHONY: check
-check: lint type-check
+check: check-src type-check lint
 
-.PHONY: lint
-lint:
+.PHONY: check-src
+check-src:
 	flake8 .
 
 .PHONY: type-check
 type-check:
 	mypy .
+
+.PHONY: lint
+lint:
+	pylint synchronous_shopping.py
 
 .PHONY: test
 test: unittest

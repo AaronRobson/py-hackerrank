@@ -4,8 +4,8 @@ from synchronous_shopping import shop
 
 
 def case_6() -> int:
-    n = 50
-    k = 7
+    center_count = 50
+    fish_count = 7
     centers = [
         '0',
         '1 3',
@@ -160,7 +160,11 @@ def case_6() -> int:
         [7, 28, 819],
         [22, 41, 526],
     ]
-    return shop(n=n, k=k, centers=centers, roads=roads)
+    return shop(
+        center_count=center_count,
+        fish_count=fish_count,
+        centers=centers,
+        roads=roads)
 
 
 def main():

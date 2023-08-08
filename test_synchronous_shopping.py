@@ -153,8 +153,8 @@ class TestShop(unittest.TestCase):
     def test_sample_test_case_0(self):
         self.assertEqual(
             shop(
-                n=5,
-                k=5,
+                center_count=5,
+                fish_count=5,
                 centers=[
                     '1 1',
                     '1 2',
@@ -175,8 +175,8 @@ class TestShop(unittest.TestCase):
     def test_sample_test_case_1(self):
         self.assertEqual(
             shop(
-                n=6,
-                k=3,
+                center_count=6,
+                fish_count=3,
                 centers=[
                     '2 1 2',
                     '1 3',
@@ -201,9 +201,9 @@ class TestShop(unittest.TestCase):
             792)
 
     def test_case_3(self):
-        n = 8
+        center_count = 8
         road_count = 20
-        k = 2
+        fish_count = 2
         centers = [
             '0',
             '1 1',
@@ -238,22 +238,22 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            n)
+            center_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                n=n,
-                k=k,
+                center_count=center_count,
+                fish_count=fish_count,
                 centers=centers,
                 roads=roads),
             207)
 
     def test_case_2(self):
-        n = 6
+        center_count = 6
         road_count = 5
-        k = 4
+        fish_count = 4
         centers = [
             '1 2',
             '1 2',
@@ -271,22 +271,22 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            n)
+            center_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                n=n,
-                k=k,
+                center_count=center_count,
+                fish_count=fish_count,
                 centers=centers,
                 roads=roads),
             2989)
 
     def test_case_6(self):
-        n = 50
+        center_count = 50
         road_count = 100
-        k = 7
+        fish_count = 7
         centers = [
             '0',
             '1 3',
@@ -443,23 +443,23 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            n)
+            center_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                n=n,
-                k=k,
+                center_count=center_count,
+                fish_count=fish_count,
                 centers=centers,
                 roads=roads),
             2868)
 
     @unittest.skip('Takes too long at the moment')
     def test_case_7(self):
-        n = 100
+        center_count = 100
         road_count = 100
-        k = 10
+        fish_count = 10
         centers = [
             '2 6 7',
             '1 5',
@@ -666,23 +666,23 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            n)
+            fish_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                n=n,
-                k=k,
+                center_count=center_count,
+                fish_count=fish_count,
                 centers=centers,
                 roads=roads),
             5242)
 
     @unittest.skip('Takes too long at the moment')
     def test_case_12(self):
-        n = 600
+        center_count = 600
         road_count = 2000
-        k = 9
+        fish_count = 9
         centers = [
             '1 2',
             '1 8',
@@ -3289,23 +3289,23 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            n)
+            fish_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                n=n,
-                k=k,
+                center_count=center_count,
+                fish_count=fish_count,
                 centers=centers,
                 roads=roads),
             1268)
 
     @unittest.skip('Takes too long at the moment')
     def test_case_28(self):
-        n = 1000
+        center_count = 1000
         road_count = 2000
-        k = 10
+        fish_count = 10
         centers = [
             '0',
             '0',
@@ -6312,14 +6312,14 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            n)
+            center_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                n=n,
-                k=k,
+                center_count=center_count,
+                fish_count=fish_count,
                 centers=centers,
                 roads=roads),
             7624)
@@ -6517,15 +6517,21 @@ class TestNode(unittest.TestCase):
         a = Node()
         with self.assertRaises(AttributeError, msg='use __slots__ on class'):
             _ = a.__dict__
-        self.assertEqual(repr(a), 'Node()')
+        self.assertEqual(
+            repr(a),
+            'Node(vertex=0, latest_cost=9223372036854775807, explored=False, previous_node=None, previous_routes_have_been_cached=False)')
         self.assertEqual(a.latest_cost, maxsize)
         self.assertEqual(a.explored, False)
-        self.assertEqual(repr(a), 'Node()')
+        self.assertEqual(
+            repr(a),
+            'Node(vertex=0, latest_cost=9223372036854775807, explored=False, previous_node=None, previous_routes_have_been_cached=False)')
         a.latest_cost = 5
         a.explored = True
         self.assertEqual(a.latest_cost, 5)
         self.assertEqual(a.explored, True)
-        self.assertEqual(repr(a), 'Node(latest_cost=5, explored=True)')
+        self.assertEqual(
+            repr(a),
+            'Node(vertex=0, latest_cost=5, explored=True, previous_node=None, previous_routes_have_been_cached=False)')
 
 
 class TestFindDirectRoads(unittest.TestCase):
@@ -6654,7 +6660,7 @@ class TestStopEarlyWhenAllFishAreFound(unittest.TestCase):
 class TestSplitAt(unittest.TestCase):
     def test(self):
         self.assertEqual(
-            list(split_at(n=2, values=(1, 2, 3, 4, 5))),
+            list(split_at(index=2, values=(1, 2, 3, 4, 5))),
             [
                 (1, 2),
                 (3, 4, 5),

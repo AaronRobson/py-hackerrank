@@ -4,6 +4,7 @@
 '''
 
 from collections import defaultdict
+from dataclasses import dataclass
 from functools import partial
 import logging
 import os
@@ -30,14 +31,16 @@ except ImportError:
         '''From: https://docs.python.org/3/library/itertools.html#itertools.pairwise
         '''
         # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-        a, b = tee(iterable)
-        next(b, None)
-        return zip(a, b)
+        first, second = tee(iterable)
+        next(second, None)
+        return zip(first, second)
 
 
 logging.basicConfig(level=logging.DEBUG)
 
 Cache = Dict[Tuple[int, int], int]
+RouteCache = Dict[Tuple[int, ...], int]
+
 Center = int
 Centers = Dict[Center, Set[int]]
 
@@ -83,15 +86,15 @@ def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> Set[T
     return set(chain.from_iterable(map(permutations, combinations)))
 
 
-def shop(n: int, k: int, centers, roads) -> int:
+def shop(*, center_count: int, fish_count: int, centers, roads) -> int:
     # cats_count = 2
     # cats = parse_cats(cats_count)
 
-    vertices = parse_vertices(n)
+    vertices = parse_vertices(center_count)
     starting_vertex = vertices[0]
     finishing_vertex = vertices[-1]
 
-    fishes = parse_fishes(k)
+    fishes = parse_fishes(fish_count)
 
     centers = parse_centers(centers)
     roads = parse_roads(roads)
@@ -99,7 +102,7 @@ def shop(n: int, k: int, centers, roads) -> int:
     cache = route_finder(
         vertices=vertices,
         edges=roads,
-        important_vertices=tuple({*{1, n}, *set(vertex for vertex, fishes in centers.items() if fishes)}))
+        important_vertices=tuple({*{1, center_count}, *set(vertex for vertex, fishes in centers.items() if fishes)}))
     logging.debug('cache(len=%d)=%r', len(cache), cache)
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
@@ -113,10 +116,10 @@ def shop(n: int, k: int, centers, roads) -> int:
     centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
     logging.debug('centers_to_choose_from_grouped_by_fishes=%r', centers_to_choose_from_grouped_by_fishes)
 
-    all_permutations_of_centers = list(choose_all_combinations_of_centers(centers_to_choose_from_grouped_by_fishes))
+    all_permutations_of_centers = choose_all_combinations_of_centers(centers_to_choose_from_grouped_by_fishes)
     logging.debug('all_permutations_of_centers(len=%d)=%r', len(all_permutations_of_centers), all_permutations_of_centers)
 
-    route_cache = {}
+    route_cache: RouteCache = {}
     potential_route_costs: Iterable[Tuple[int, int]] = (
         (
             find_route_costs(cache=cache, route_cache=route_cache, route=(starting_vertex,) + cat_1_route + (finishing_vertex,)),
@@ -129,17 +132,17 @@ def shop(n: int, k: int, centers, roads) -> int:
     return min(map(max, potential_route_costs))
 
 
-def _one_to_n(n: int) -> Tuple[int, ...]:
-    return tuple(range(1, n + 1))
+def _one_to_size(size: int) -> Tuple[int, ...]:
+    return tuple(range(1, size + 1))
 
 
-def _one_to_n_set(n: int) -> Set[int]:
-    return set(_one_to_n(n))
+def _one_to_size_set(size: int) -> Set[int]:
+    return set(_one_to_size(size))
 
 
-parse_cats = _one_to_n
-parse_vertices = _one_to_n
-parse_fishes = _one_to_n_set
+parse_cats = _one_to_size
+parse_vertices = _one_to_size
+parse_fishes = _one_to_size_set
 
 
 def parse_centers(centers) -> Centers:
@@ -172,19 +175,19 @@ def dijkstra(*, vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) 
     node_in_progress: Optional[int] = from_
 
     while node_in_progress is not None:
-        for to, cost in _find_direct_roads(edges=edges, from_=node_in_progress).items():
-            if set_latest[to].explored:
+        for to_node, cost in _find_direct_roads(edges=edges, from_=node_in_progress).items():
+            if set_latest[to_node].explored:
                 continue
             this_cost = set_latest[node_in_progress].latest_cost + cost
-            if set_latest[to].latest_cost > this_cost:
-                set_latest[to].latest_cost = this_cost
-                set_latest[to].previous_node = set_latest[node_in_progress]
+            if set_latest[to_node].latest_cost > this_cost:
+                set_latest[to_node].latest_cost = this_cost
+                set_latest[to_node].previous_node = set_latest[node_in_progress]
 
         set_latest[node_in_progress].explored = True
         node_in_progress = _find_new_node_in_progress(set_latest)
 
     # Update cache from each target to all the others in the chain up to (but not including) 'from_'.
-    for to, value in set_latest.items():
+    for to_node, value in set_latest.items():
         if value.previous_routes_have_been_cached:
             continue
         node = value
@@ -219,7 +222,7 @@ def route_finder(vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, importan
     return cache
 
 
-def find_route_costs(*, cache: Cache, route_cache, route: Tuple[int, ...]) -> int:
+def find_route_costs(*, cache: Cache, route_cache: RouteCache, route: Tuple[int, ...]) -> int:
     try:
         return route_cache[route]
     except KeyError:
@@ -231,42 +234,13 @@ def find_route_costs(*, cache: Cache, route_cache, route: Tuple[int, ...]) -> in
         return cost
 
 
+@dataclass(init=True, repr=True, kw_only=True, slots=True)
 class Node():
-    __slots__ = (
-        'vertex',
-        'latest_cost',
-        'explored',
-        'previous_node',
-        'previous_routes_have_been_cached',
-    )
-
-    def __init__(
-            self,
-            *,
-            vertex: int = 0,
-            latest_cost: int = maxsize,
-            explored: bool = False,
-            previous_node: Optional[Self] = None,
-            previous_routes_have_been_cached: bool = False):
-        self.vertex = vertex
-        self.latest_cost = latest_cost
-        self.explored = explored
-        self.previous_node = previous_node
-        self.previous_routes_have_been_cached = previous_routes_have_been_cached
-
-    def __repr__(self):
-        items = []
-        if self.vertex != 0:
-            items.append(f'vertex={self.vertex!r}')
-        if self.latest_cost != maxsize:
-            items.append(f'latest_cost={self.latest_cost!r}')
-        if self.explored:
-            items.append(f'explored={self.explored!r}')
-        if self.previous_node is not None:
-            items.append(f'previous_node_={self.previous_node!r}')
-        if self.previous_routes_have_been_cached:
-            items.append(f'previous_routes_have_been_cached={self.previous_routes_have_been_cached!r}')
-        return f'{self.__class__.__name__}({", ".join(items)})'
+    vertex: int = 0
+    latest_cost: int = maxsize
+    explored: bool = False
+    previous_node: Optional[Self] = None
+    previous_routes_have_been_cached: bool = False
 
 
 def _find_direct_roads(*, edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
@@ -313,40 +287,48 @@ def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[in
         fishes_we_have |= fishes_of_center
 
 
-def split_at(n: int, values: Tuple[Any]) -> Tuple[Tuple[Any], Tuple[Any]]:
+def split_at(index: int, values: Tuple[Any, ...]) -> Tuple[Tuple[Any, ...], Tuple[Any, ...]]:
     return (
-        values[:n],
-        values[n:],
+        values[:index],
+        values[index:],
     )
 
 
 def all_splits_in_two(centers: Tuple[int, ...]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
     length = len(centers)
-    f = partial(split_at, values=centers)
-    return map(f, range(1 if length > 1 else 0, length))
+    func = partial(split_at, values=centers)
+    return map(func, range(1 if length > 1 else 0, length))
 
 
-if __name__ == '__main__':
-    with open(os.environ['OUTPUT_PATH'], 'w') as fptr:
+def main() -> None:
+    with open(os.environ['OUTPUT_PATH'], 'w', encoding='utf-8') as fptr:
         first_multiple_input = input().rstrip().split()
 
-        n = int(first_multiple_input[0])
+        center_count = int(first_multiple_input[0])
 
-        m = int(first_multiple_input[1])
+        road_count = int(first_multiple_input[1])
 
-        k = int(first_multiple_input[2])
+        fish_count = int(first_multiple_input[2])
 
         centers = []
 
-        for _ in range(n):
+        for _ in range(center_count):
             centers_item = input()
             centers.append(centers_item)
 
         roads = []
 
-        for _ in range(m):
+        for _ in range(road_count):
             roads.append(list(map(int, input().rstrip().split())))
 
-        res = shop(n, k, centers, roads)
+        res = shop(
+            center_count=center_count,
+            fish_count=fish_count,
+            centers=centers,
+            roads=roads)
 
         fptr.write(str(res) + '\n')
+
+
+if __name__ == '__main__':
+    main()
