@@ -76,14 +76,7 @@ def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable
 def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> set[tuple[int, ...]]:
     combinations = set(map(frozenset, _choose_combinations_of_centers(values)))
 
-    new_combinations = set()
-    for combination in combinations:
-        for other in combinations:
-            if combination > other:
-                break
-        else:
-            new_combinations.add(combination)
-    combinations = new_combinations
+    combinations = set(filterfalse(lambda combination: any(combination > other for other in combinations), combinations))
 
     return set(chain.from_iterable(map(permutations, combinations)))
 
