@@ -4,11 +4,12 @@
 '''
 
 from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from functools import partial
 import logging
 import os
-from typing import Any, Dict, Optional, Tuple, Set, FrozenSet, NamedTuple, Iterable, Sequence
+from typing import Any, Optional, NamedTuple
 try:
     # Requires python3.11+
     # https://docs.python.org/3.11/library/typing.html#typing.Self
@@ -38,14 +39,14 @@ except ImportError:
 
 logging.basicConfig(level=logging.DEBUG)
 
-Cache = Dict[Tuple[int, int], int]
-RouteCache = Dict[Tuple[int, ...], int]
+Cache = dict[tuple[int, int], int]
+RouteCache = dict[tuple[int, ...], int]
 
 Center = int
-Centers = Dict[Center, Set[int]]
+Centers = dict[Center, set[int]]
 
 
-def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable[Tuple[int, ...]]:
+def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable[tuple[int, ...]]:
     '''Not all combinations.
     '''
     values = list(values)
@@ -71,7 +72,7 @@ def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable
         yield tuple()
 
 
-def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> Set[Tuple[int, ...]]:
+def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> set[tuple[int, ...]]:
     combinations = set(map(frozenset, _choose_combinations_of_centers(values)))
 
     new_combinations = set()
@@ -120,7 +121,7 @@ def shop(*, center_count: int, fish_count: int, centers, roads) -> int:
     logging.debug('all_permutations_of_centers(len=%d)=%r', len(all_permutations_of_centers), all_permutations_of_centers)
 
     route_cache: RouteCache = {}
-    potential_route_costs: Iterable[Tuple[int, int]] = (
+    potential_route_costs: Iterable[tuple[int, int]] = (
         (
             find_route_costs(cache=cache, route_cache=route_cache, route=(starting_vertex,) + cat_1_route + (finishing_vertex,)),
             find_route_costs(cache=cache, route_cache=route_cache, route=(starting_vertex,) + cat_2_route + (finishing_vertex,)),
@@ -132,11 +133,11 @@ def shop(*, center_count: int, fish_count: int, centers, roads) -> int:
     return min(map(max, potential_route_costs))
 
 
-def _one_to_size(size: int) -> Tuple[int, ...]:
+def _one_to_size(size: int) -> tuple[int, ...]:
     return tuple(range(1, size + 1))
 
 
-def _one_to_size_set(size: int) -> Set[int]:
+def _one_to_size_set(size: int) -> set[int]:
     return set(_one_to_size(size))
 
 
@@ -153,20 +154,20 @@ def parse_centers(centers) -> Centers:
 
 
 class Road(NamedTuple):
-    route: Set[int]  # Expected to have a length of exactly 2.
+    route: set[int]  # Expected to have a length of exactly 2.
     cost: int  # Expected to not be negative.
 
 
 Route = Road
 
 
-def parse_roads(roads) -> Tuple[Road, ...]:
+def parse_roads(roads) -> tuple[Road, ...]:
     return tuple(
         Road(route={road[0], road[1]}, cost=road[2])
         for road in roads)
 
 
-def dijkstra(*, vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
+def dijkstra(*, vertices: tuple[int, ...], edges: tuple[Road, ...], from_: int) -> dict[int, int]:
     '''https://www.youtube.com/watch?v=EFg3u_E6eHU
     '''
     set_latest = {vertex: Node(vertex=vertex) for vertex in vertices}
@@ -210,7 +211,7 @@ def dijkstra(*, vertices: Tuple[int, ...], edges: Tuple[Road, ...], from_: int) 
     }
 
 
-def route_finder(vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, important_vertices: Optional[Tuple[int, ...]] = None) -> Cache:
+def route_finder(vertices: tuple[int, ...], edges: tuple[Road, ...], *, important_vertices: Optional[tuple[int, ...]] = None) -> Cache:
     important_vertices = important_vertices or vertices
     cache: Cache = {}
     for from_ in important_vertices:
@@ -222,7 +223,7 @@ def route_finder(vertices: Tuple[int, ...], edges: Tuple[Road, ...], *, importan
     return cache
 
 
-def find_route_costs(*, cache: Cache, route_cache: RouteCache, route: Tuple[int, ...]) -> int:
+def find_route_costs(*, cache: Cache, route_cache: RouteCache, route: tuple[int, ...]) -> int:
     try:
         return route_cache[route]
     except KeyError:
@@ -243,7 +244,7 @@ class Node():
     previous_routes_have_been_cached: bool = False
 
 
-def _find_direct_roads(*, edges: Tuple[Road, ...], from_: int) -> Dict[int, int]:
+def _find_direct_roads(*, edges: tuple[Road, ...], from_: int) -> dict[int, int]:
     output = {}
     for edge in edges:
         if from_ in edge.route:
@@ -259,7 +260,7 @@ def _find_new_node_in_progress(set_latest) -> Optional[int]:
     return min(unexplored, key=lambda item: item[1].latest_cost)[0]
 
 
-def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: Set[int]) -> Centers:
+def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: set[int]) -> Centers:
     return {
         center: fishes_of_center
         for center, fishes_of_center in centers.items()
@@ -267,7 +268,7 @@ def find_centers_with_fishes_we_need(*, centers: Centers, fishes_we_need: Set[in
     }
 
 
-def swap_centers_with_fish_we_need(centers_with_fish_we_need: Centers) -> Dict[int, FrozenSet[int]]:
+def swap_centers_with_fish_we_need(centers_with_fish_we_need: Centers) -> dict[int, frozenset[int]]:
     fishes_we_need_to_centers = defaultdict(set)
     for center, fishes in centers_with_fish_we_need.items():
         for fish in fishes:
@@ -278,8 +279,8 @@ def swap_centers_with_fish_we_need(centers_with_fish_we_need: Centers) -> Dict[i
     }
 
 
-def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[int, Set[int]]], fishes_we_need: Set[int]) -> Iterable[int]:
-    fishes_we_have: Set[int] = set()
+def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[tuple[int, set[int]]], fishes_we_need: set[int]) -> Iterable[int]:
+    fishes_we_have: set[int] = set()
     for center, fishes_of_center in centers_permutation:
         if not bool(fishes_we_need - fishes_we_have):
             break
@@ -287,14 +288,14 @@ def stop_early_when_all_fish_are_found(*, centers_permutation: Iterable[Tuple[in
         fishes_we_have |= fishes_of_center
 
 
-def split_at(index: int, values: Tuple[Any, ...]) -> Tuple[Tuple[Any, ...], Tuple[Any, ...]]:
+def split_at(index: int, values: tuple[Any, ...]) -> tuple[tuple[Any, ...], tuple[Any, ...]]:
     return (
         values[:index],
         values[index:],
     )
 
 
-def all_splits_in_two(centers: Tuple[int, ...]) -> Iterable[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
+def all_splits_in_two(centers: tuple[int, ...]) -> Iterable[tuple[tuple[int, ...], tuple[int, ...]]]:
     length = len(centers)
     func = partial(split_at, values=centers)
     return map(func, range(1 if length > 1 else 0, length))
