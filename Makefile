@@ -1,15 +1,17 @@
 .DEFAULT_GOAL := all
 
+DOT?=neato
+
 .PHONY: all
-all: check test
+all: check test graphs
 
 .PHONY: clean
 clean:
-	rm -f *.pyc
+	rm -f *.pyc *.dot *.gv *.bmp *.jpeg *.jpg *.pdf *.png *.pic *.ps *.svg
 
 .PHONY: install-packages
 install-packages:
-	pip3 install --upgrade \
+	python3 -m pip install --upgrade \
 	  -r dev-requirements.txt \
 	  -r requirements.txt
 
@@ -18,15 +20,15 @@ check: check-src type-check lint
 
 .PHONY: check-src
 check-src:
-	flake8 .
+	python3 -m flake8 .
 
 .PHONY: type-check
 type-check:
-	mypy .
+	python3 -m mypy .
 
 .PHONY: lint
 lint:
-	pylint synchronous_shopping.py
+	python3 -m pylint
 
 .PHONY: test
 test: unittest
@@ -41,3 +43,23 @@ unittest-python:
 .PHONY: run
 run:
 	python3 run_performance_check.py
+
+%.gv : %.txt
+	cat $< | python3 generate_graph.py > $@
+
+%.svg : %.gv
+	$(DOT) -Tsvg -o $@ $<
+
+%.png : %.gv
+	$(DOT) -Tpng -o $@ $<
+
+SRC_FILES=$(wildcard input*.txt)
+GZ_FILES=$(SRC_FILES:.txt=.gv)
+OUT_FILES=$(GZ_FILES:.gv=.svg)
+
+.PHONY: listtargets
+listtargets:
+	@echo $(OUT_FILES)
+
+.PHONY: graphs
+graphs: $(OUT_FILES)
