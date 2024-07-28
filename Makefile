@@ -44,7 +44,7 @@ unittest-python:
 run:
 	python3 run_performance_check.py
 
-%.gv : %.txt
+%.gv : %.txt generate_graph.py
 	cat $< | python3 generate_graph.py > $@
 
 %.svg : %.gv
