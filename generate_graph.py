@@ -1,7 +1,7 @@
 from typing import Generator
 
 
-def graphviz_info(*, centers: str, roads: list[str], indent: str = ' ' * 2) -> Generator[str, None, None]:
+def graphviz_info(*, centers: list[str], roads: list[list[int]], indent: str = ' ' * 2) -> Generator[str, None, None]:
     yield 'strict graph {'
     yield f'{indent}rankdir=LR;'
     for i, center in enumerate(centers, start=1):
