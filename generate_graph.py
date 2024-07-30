@@ -4,6 +4,7 @@ from typing import Generator
 def graphviz_info(*, centers: list[str], roads: list[list[int]], indent: str = ' ' * 2) -> Generator[str, None, None]:
     yield 'strict graph {'
     yield f'{indent}rankdir=LR;'
+    yield f'{indent}overlap=false;'
     for i, center in enumerate(centers, start=1):
         foods = center.split()[1:]
         food_info = f' [label="{i} ({", ".join(foods)})"]' if foods else ''
