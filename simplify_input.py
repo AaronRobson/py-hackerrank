@@ -60,22 +60,6 @@ def output_data(
     print()
 
 
-def simplify_transformations(
-    *,
-    steps: Optional[list[str]],
-    **data: dict,
-) -> dict:
-    if steps is None:
-        steps = []
-    for step in steps:
-        if step == 'id':
-            data = simplify_id(**data)
-        elif step == 'fish':
-            data = simplify_fish(**data)
-        else:
-            raise ValueError(f'step {step!r} is not recognised')
-
-
 def simplify_id(
     *,
     center_count,
