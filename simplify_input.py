@@ -1,5 +1,4 @@
 import argparse
-from typing import Optional
 
 
 def make_parser() -> argparse.ArgumentParser:
