@@ -1,19 +1,3 @@
-import argparse
-
-
-def make_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog='Graph representation simplifier',
-    )
-    parser.add_argument(
-        '--steps',
-        type=str,
-        nargs='+',
-        dest='steps',
-    )
-    return parser
-
-
 def input_data() -> dict:
     first_multiple_input = input().rstrip().split()
 
@@ -84,6 +68,8 @@ def simplify_fish(
     centers,
     roads,
 ):
+    '''Fish that the start or end points have do not neeed to be included in the graph as they'll be picked up automatically.
+    '''
     start_center = centers[0]
     finish_center = centers[-1]
     redundant_fishes = sorted(map(int, set(start_center.split()[1:] + finish_center.split()[1:])), reverse=True)
@@ -188,20 +174,17 @@ def simplify_deadends(
     }
 
 
-def main() -> None:
-    parser = make_parser()
-    args = parser.parse_args()
+config = [
+    simplify_id,
+    simplify_fish,
+    simplify_deadends,
+]
 
+
+def main() -> None:
     data = input_data()
-    for step in args.steps:
-        if step == 'id':
-            data = simplify_id(**data)
-        elif step == 'fish':
-            data = simplify_fish(**data)
-        elif step == 'deadends':
-            data = simplify_deadends(**data)
-        else:
-            raise ValueError(f'step {step!r} is not recognised')
+    for func in config:
+        data = func(**data)
     output_data(**data)
 
 

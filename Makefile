@@ -44,8 +44,8 @@ unittest-python:
 run:
 	python3 run_performance_check.py
 
-%.gv : %.txt generate_graph.py simplify_input.py Makefile
-	cat $< | python3 simplify_input.py --steps id fish deadends | python3 generate_graph.py > $@
+%.gv : %.txt generate_graph.py simplify_input.py
+	cat $< | python3 simplify_input.py | python3 generate_graph.py > $@
 
 %.svg : %.gv
 	$(DOT) -Tsvg -o $@ $<
