@@ -4,6 +4,7 @@ from unittest.mock import patch
 import synchronous_shopping
 
 
+@patch('synchronous_shopping.print', return_value=None)
 @patch('synchronous_shopping.input')
 @patch('synchronous_shopping.open')
 @patch('synchronous_shopping.os.environ', return_value={'OUTPUT_PATH': 'mock-output-path.file'})
@@ -36,11 +37,12 @@ class TestMain(unittest.TestCase):
             30,
         }
 
-    def test(self, mock_os_environ, mock_open, mock_input):
+    def test(self, mock_os_environ, mock_open, mock_input, mock_print):
         for i in range(0, 30+1):
             mock_os_environ.reset_mock()
             mock_open.reset_mock()
             mock_input.reset_mock()
+            mock_print.reset_mock()
 
             name = f'test_case_{i}'
             with self.subTest(name=name):
@@ -56,6 +58,7 @@ class TestMain(unittest.TestCase):
                 mock_open.assert_called_with(mock_os_environ['OUTPUT_PATH'], 'w', encoding='utf-8')
                 mock_input.assert_called()
                 mock_open.return_value.__enter__.return_value.write.assert_called_once_with(str(expected) + '\n')
+                mock_print.assert_not_called()
 
 
 if __name__ == '__main__':

@@ -9,33 +9,37 @@ from synchronous_shopping_lib import shop
 
 
 def main() -> None:
-    with open(os.environ['OUTPUT_PATH'], 'w', encoding='utf-8') as fptr:
-        first_multiple_input = input().rstrip().split()
+    first_multiple_input = input().rstrip().split()
 
-        center_count = int(first_multiple_input[0])
+    center_count = int(first_multiple_input[0])
 
-        road_count = int(first_multiple_input[1])
+    road_count = int(first_multiple_input[1])
 
-        fish_count = int(first_multiple_input[2])
+    fish_count = int(first_multiple_input[2])
 
-        centers = []
+    centers = []
 
-        for _ in range(center_count):
-            centers_item = input()
-            centers.append(centers_item)
+    for _ in range(center_count):
+        centers_item = input()
+        centers.append(centers_item)
 
-        roads = []
+    roads = []
 
-        for _ in range(road_count):
-            roads.append(list(map(int, input().rstrip().split())))
+    for _ in range(road_count):
+        roads.append(list(map(int, input().rstrip().split())))
 
-        res = shop(
-            center_count=center_count,
-            fish_count=fish_count,
-            centers=centers,
-            roads=roads)
+    res = shop(
+        center_count=center_count,
+        fish_count=fish_count,
+        centers=centers,
+        roads=roads)
 
-        fptr.write(str(res) + '\n')
+    output_path = os.environ.get('OUTPUT_PATH')
+    if output_path:
+        with open(os.environ['OUTPUT_PATH'], 'w', encoding='utf-8') as fptr:
+            fptr.write(str(res) + '\n')
+    else:
+        print(res)
 
 
 if __name__ == '__main__':
