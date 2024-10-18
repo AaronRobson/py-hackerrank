@@ -272,8 +272,16 @@ config = [
 
 def main() -> None:
     data = input_data()
-    for func in config:
-        data = func(**data)
+    while True:
+        diff = False
+        for func in config:
+            new_data = func(**data)
+            if data != new_data:
+                diff = True
+            data = new_data
+        if not diff:
+            break
+
     output_data(**data)
 
 
