@@ -49,16 +49,12 @@ def main() -> None:
         center_count = int(first_multiple_input[0])
         road_count = int(first_multiple_input[1])
         fish_count = int(first_multiple_input[2])
-
-        centers = []
-        for _ in range(center_count):
-            centers_item = retrieve_next_line_func()
-            centers.append(centers_item)
-
-        roads = []
-        for _ in range(road_count):
-            roads.append(list(map(int, retrieve_next_line_func().rstrip().split())))
-
+        centers = [
+            retrieve_next_line_func()
+            for _ in range(center_count)]
+        roads = [
+            list(map(int, retrieve_next_line_func().rstrip().split()))
+            for _ in range(road_count)]
         return shop(
             fish_count=fish_count,
             centers=centers,
