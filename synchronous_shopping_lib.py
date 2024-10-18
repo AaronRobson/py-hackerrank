@@ -2,7 +2,6 @@ from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from functools import partial
-import logging
 from operator import attrgetter
 from typing import Any, Optional, NamedTuple
 try:
@@ -30,9 +29,6 @@ else:
         first, second = tee(iterable)
         next(second, None)
         return zip(first, second)
-
-
-logging.basicConfig(level=logging.DEBUG)
 
 Cache = dict[tuple[int, int], int]
 RouteCache = dict[tuple[int, ...], int]
@@ -100,21 +96,16 @@ def _shop(*, vertices: tuple[int, ...], fishes: set[int], centers: Centers, road
         vertices=vertices,
         edges=roads,
         important_vertices=tuple({*{1, len(centers)}, *set(vertex for vertex, fishes in centers.items() if fishes)}))
-    logging.debug('cache(len=%d)=%r', len(cache), cache)
 
     fishes = fishes - centers[starting_vertex] - centers[finishing_vertex]
     if not fishes:
-        logging.debug('no extra fishes required')
         return cache[(starting_vertex, finishing_vertex)]
-    logging.debug('extra fishes required')
 
     centers_with_fish_we_need = find_centers_with_fishes_we_need(centers=centers, fishes_we_need=fishes)
     fishes_we_need_to_centers = swap_centers_with_fish_we_need(centers_with_fish_we_need)
     centers_to_choose_from_grouped_by_fishes = set(fishes_we_need_to_centers.values())
-    logging.debug('centers_to_choose_from_grouped_by_fishes=%r', centers_to_choose_from_grouped_by_fishes)
 
     all_permutations_of_centers = choose_all_combinations_of_centers(centers_to_choose_from_grouped_by_fishes)
-    logging.debug('all_permutations_of_centers(len=%d)=%r', len(all_permutations_of_centers), all_permutations_of_centers)
 
     route_cache: RouteCache = {}
     potential_route_costs: Iterable[tuple[int, int]] = (
