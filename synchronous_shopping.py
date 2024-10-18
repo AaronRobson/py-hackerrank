@@ -44,29 +44,32 @@ Centers = dict[Center, set[int]]
 
 
 def main() -> None:
-    first_multiple_input = input().rstrip().split()
+    def find_answer(retrieve_next_line_func) -> int:
+        first_multiple_input = retrieve_next_line_func().rstrip().split()
+        center_count = int(first_multiple_input[0])
+        road_count = int(first_multiple_input[1])
+        fish_count = int(first_multiple_input[2])
 
-    center_count = int(first_multiple_input[0])
+        centers = []
+        for _ in range(center_count):
+            centers_item = retrieve_next_line_func()
+            centers.append(centers_item)
 
-    road_count = int(first_multiple_input[1])
+        roads = []
+        for _ in range(road_count):
+            roads.append(list(map(int, retrieve_next_line_func().rstrip().split())))
 
-    fish_count = int(first_multiple_input[2])
+        return shop(
+            fish_count=fish_count,
+            centers=centers,
+            roads=roads)
 
-    centers = []
-
-    for _ in range(center_count):
-        centers_item = input()
-        centers.append(centers_item)
-
-    roads = []
-
-    for _ in range(road_count):
-        roads.append(list(map(int, input().rstrip().split())))
-
-    res = shop(
-        fish_count=fish_count,
-        centers=centers,
-        roads=roads)
+    if len(sys.argv) <= 1:
+        res = find_answer(input)
+    else:
+        filepath = sys.argv[1]
+        with open(filepath, 'rt', encoding='utf-8') as fp:
+            res = find_answer(fp.readline)
 
     output_path = os.environ.get('OUTPUT_PATH')
     if output_path:
