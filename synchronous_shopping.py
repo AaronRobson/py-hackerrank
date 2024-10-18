@@ -111,15 +111,6 @@ def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> set[t
     return set(chain.from_iterable(map(permutations, combinations)))
 
 
-def _parse_fields(*, center_count: int, fish_count: int, centers, roads) -> dict[str, Any]:
-    return {
-        'vertices': parse_vertices(center_count),
-        'fishes': parse_fishes(fish_count),
-        'centers': parse_centers(centers),
-        'roads': parse_roads(roads),
-    }
-
-
 class Road(NamedTuple):
     route: set[int]  # Expected to have a length of exactly 2.
     cost: int  # Expected to not be negative.
@@ -160,13 +151,15 @@ def _shop(*, vertices: tuple[int, ...], fishes: set[int], centers: Centers, road
     return min(map(max, potential_route_costs))
 
 
-def shop(*, center_count: int, fish_count: int, centers, roads) -> int:
-    return _shop(**(_parse_fields(
-        center_count=center_count,
-        fish_count=fish_count,
-        centers=centers,
-        roads=roads,
-    )))
+def shop(*, center_count: Optional[int] = None, fish_count: int, centers, roads) -> int:
+    if (center_count is not None) and len(centers) != center_count:
+        raise ValueError('center_count is incorrect')
+    return _shop(
+        vertices=parse_vertices(len(centers)),
+        fishes=parse_fishes(fish_count),
+        centers=parse_centers(centers),
+        roads=parse_roads(roads),
+    )
 
 
 def _one_to_size(size: int) -> tuple[int, ...]:
