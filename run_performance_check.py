@@ -160,8 +160,8 @@ def case_6() -> int:
         [7, 28, 819],
         [22, 41, 526],
     ]
+    assert len(centers) == center_count
     return shop(
-        center_count=center_count,
         fish_count=fish_count,
         centers=centers,
         roads=roads)

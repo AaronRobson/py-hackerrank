@@ -64,7 +64,6 @@ def main() -> None:
         roads.append(list(map(int, input().rstrip().split())))
 
     res = shop(
-        center_count=center_count,
         fish_count=fish_count,
         centers=centers,
         roads=roads)
@@ -151,9 +150,7 @@ def _shop(*, vertices: tuple[int, ...], fishes: set[int], centers: Centers, road
     return min(map(max, potential_route_costs))
 
 
-def shop(*, center_count: Optional[int] = None, fish_count: int, centers: list[str], roads: list[list[int]]) -> int:
-    if (center_count is not None) and len(centers) != center_count:
-        raise ValueError('center_count is incorrect')
+def shop(*, fish_count: int, centers: list[str], roads: list[list[int]]) -> int:
     return _shop(
         vertices=parse_vertices(len(centers)),
         fishes=parse_fishes(fish_count),

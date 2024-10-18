@@ -212,7 +212,6 @@ class TestShop(unittest.TestCase):
     def test_sample_test_case_0(self):
         self.assertEqual(
             shop(
-                center_count=5,
                 fish_count=5,
                 centers=[
                     '1 1',
@@ -234,7 +233,6 @@ class TestShop(unittest.TestCase):
     def test_sample_test_case_1(self):
         self.assertEqual(
             shop(
-                center_count=6,
                 fish_count=3,
                 centers=[
                     '2 1 2',
@@ -303,7 +301,6 @@ class TestShop(unittest.TestCase):
             road_count)
         self.assertEqual(
             shop(
-                center_count=center_count,
                 fish_count=fish_count,
                 centers=centers,
                 roads=roads),
@@ -336,7 +333,6 @@ class TestShop(unittest.TestCase):
             road_count)
         self.assertEqual(
             shop(
-                center_count=center_count,
                 fish_count=fish_count,
                 centers=centers,
                 roads=roads),
@@ -508,7 +504,6 @@ class TestShop(unittest.TestCase):
             road_count)
         self.assertEqual(
             shop(
-                center_count=center_count,
                 fish_count=fish_count,
                 centers=centers,
                 roads=roads),
@@ -725,13 +720,12 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            fish_count)
+            center_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                center_count=center_count,
                 fish_count=fish_count,
                 centers=centers,
                 roads=roads),
@@ -3348,13 +3342,12 @@ class TestShop(unittest.TestCase):
         ]
         self.assertEqual(
             len(centers),
-            fish_count)
+            center_count)
         self.assertEqual(
             len(roads),
             road_count)
         self.assertEqual(
             shop(
-                center_count=center_count,
                 fish_count=fish_count,
                 centers=centers,
                 roads=roads),
@@ -6377,7 +6370,6 @@ class TestShop(unittest.TestCase):
             road_count)
         self.assertEqual(
             shop(
-                center_count=center_count,
                 fish_count=fish_count,
                 centers=centers,
                 roads=roads),
