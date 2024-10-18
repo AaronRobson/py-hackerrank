@@ -28,7 +28,7 @@ type-check:
 
 .PHONY: lint
 lint:
-	python3 -m pylint
+	python3 -m pylint .
 
 .PHONY: test
 test: unittest
