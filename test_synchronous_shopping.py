@@ -23,6 +23,7 @@ from synchronous_shopping import (
 )
 
 
+@patch('synchronous_shopping.sys.argv', autospec=True, return_value=['mock_program_name'])
 @patch('synchronous_shopping.print', return_value=None)
 @patch('synchronous_shopping.input')
 @patch('synchronous_shopping.open')
@@ -56,7 +57,7 @@ class TestMain(unittest.TestCase):
             30,
         }
 
-    def test(self, mock_os_environ, mock_open, mock_input, mock_print):
+    def test(self, mock_os_environ, mock_open, mock_input, mock_print, mock_sys_argv):
         for i in range(0, 30+1):
             mock_os_environ.reset_mock()
             mock_open.reset_mock()
