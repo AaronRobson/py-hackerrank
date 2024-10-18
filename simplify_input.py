@@ -117,6 +117,10 @@ def simplify_fish(
     }
 
 
+def line_to_fish(line: str) -> set[int]:
+    return set(map(int, line.split()[1:]))
+
+
 def simplify_deadends(
     *,
     center_count,
@@ -136,12 +140,13 @@ def simplify_deadends(
             # skip removing the start or end centers
             if center in (1, center_count):
                 continue
-            # skip removing center with fish
-            # TODO consider allowing centers with only fish that the neighbour already has to be removed
-            if centers[center - 1] != '0':
-                continue
             # skip removing centers that aren't dead ends
             if len(links) >= 2:
+                continue
+            # skip removing center with fish that the neighbour is missing
+            center_fish = line_to_fish(centers[center - 1])
+            neighbour_fish = line_to_fish(centers[list(links)[0] - 1])
+            if center_fish - neighbour_fish:
                 continue
             centers_to_remove.add(center)
 
