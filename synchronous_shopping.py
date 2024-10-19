@@ -23,19 +23,6 @@ from itertools import chain, filterfalse, permutations
 import sys
 
 
-if sys.version_info[:2] >= (3, 11):
-    from itertools import pairwise  # type: ignore[attr-defined]
-else:
-    from itertools import tee
-
-    def pairwise(iterable):
-        '''From: https://docs.python.org/3/library/itertools.html#itertools.pairwise
-        '''
-        # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-        first, second = tee(iterable)
-        next(second, None)
-        return zip(first, second)
-
 Cache = dict[tuple[int, int], int]
 RouteCache = dict[tuple[int, ...], int]
 
@@ -244,10 +231,7 @@ def find_route_costs(*, cache: Cache, route_cache: RouteCache, route: tuple[int,
     try:
         return route_cache[route]
     except KeyError:
-        cost = sum(
-            map(
-                cache.__getitem__,
-                pairwise(route)))
+        cost = (cache[(route[0], route[1])] + find_route_costs(cache=cache, route_cache=route_cache, route=route[1:])) if len(route) > 1 else 0
         route_cache[route] = cost
         return cost
 
