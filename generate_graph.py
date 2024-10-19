@@ -1,5 +1,7 @@
 from typing import Generator
 
+from synchronous_shopping import input_data
+
 
 def graphviz_info(*, centers: list[str], roads: list[list[int]], indent: str = ' ' * 2) -> Generator[str, None, None]:
     yield 'strict graph {'
@@ -21,28 +23,11 @@ def graphviz_info(*, centers: list[str], roads: list[list[int]], indent: str = '
 
 
 def main() -> None:
-    first_multiple_input = input().rstrip().split()
-
-    center_count = int(first_multiple_input[0])
-
-    road_count = int(first_multiple_input[1])
-
-    fish_count = int(first_multiple_input[2])  # noqa: F841
-
-    centers = []
-
-    for _ in range(center_count):
-        centers_item = input()
-        centers.append(centers_item)
-
-    roads = []
-
-    for _ in range(road_count):
-        roads.append(list(map(int, input().rstrip().split())))
+    data = input_data(input)
 
     for line in graphviz_info(
-        centers=centers,
-        roads=roads,
+        centers=data['centers'],
+        roads=data['roads'],
     ):
         print(line)
 
