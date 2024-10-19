@@ -176,9 +176,13 @@ parse_vertices = _one_to_size
 parse_fishes = _one_to_size_set
 
 
+def center_to_fish(center: str) -> set[int]:
+    return set(map(int, center.split()[1:]))
+
+
 def parse_centers(centers) -> Centers:
     return {
-        i: set(map(int, center.split()[1:]))
+        i: center_to_fish(center)
         for i, center in enumerate(centers, start=1)
     }
 

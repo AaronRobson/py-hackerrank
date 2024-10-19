@@ -1,6 +1,6 @@
 from typing import Optional
 
-from synchronous_shopping import input_data, output_data
+from synchronous_shopping import center_to_fish, input_data, output_data
 
 
 def simplify_id(
@@ -74,10 +74,6 @@ def simplify_fish(
     }
 
 
-def line_to_fish(line: str) -> set[int]:
-    return set(map(int, line.split()[1:]))
-
-
 def simplify_deadends(
     *,
     center_count,
@@ -101,8 +97,8 @@ def simplify_deadends(
             if len(links) >= 2:
                 continue
             # skip removing center with fish that the neighbour is missing
-            center_fish = line_to_fish(centers[center - 1])
-            neighbour_fish = line_to_fish(centers[list(links)[0] - 1])
+            center_fish = center_to_fish(centers[center - 1])
+            neighbour_fish = center_to_fish(centers[list(links)[0] - 1])
             if center_fish - neighbour_fish:
                 continue
             centers_to_remove.add(center)
