@@ -227,8 +227,7 @@ config = [
 ]
 
 
-def main() -> None:
-    data = input_data()
+def simplify(data: dict) -> dict:
     while True:
         diff = False
         for func in config:
@@ -238,8 +237,13 @@ def main() -> None:
             data = new_data
         if not diff:
             break
+    return data
 
-    output_data(**data)
+
+def main() -> None:
+    data = input_data()
+    new_data = simplify(data)
+    output_data(**new_data)
 
 
 if __name__ == '__main__':
