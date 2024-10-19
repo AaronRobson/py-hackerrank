@@ -1,8 +1,9 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from sys import maxsize
 
 from synchronous_shopping import (
+    produce_parser,
     main,
     choose_all_combinations_of_centers,
     shop,
@@ -23,11 +24,33 @@ from synchronous_shopping import (
 )
 
 
-@patch('synchronous_shopping.sys.argv', autospec=True, return_value=['mock_program_name'])
+class TestProduceParser(unittest.TestCase):
+    def setUp(self):
+        self.parser = produce_parser()
+
+    def test_defaults(self):
+        args = self.parser.parse_args([])
+        self.assertIsNone(args.input_filepath)
+        self.assertIsNone(args.output_filepath)
+
+    def test_populated_input(self):
+        args = self.parser.parse_args([
+            'inputXX.txt',
+        ])
+        self.assertEqual(args.input_filepath, 'inputXX.txt')
+
+    def test_populated_output(self):
+        args = self.parser.parse_args([
+            '--output', 'outputXX.txt',
+        ])
+        self.assertEqual(args.output_filepath, 'outputXX.txt')
+
+
+@patch('synchronous_shopping.produce_parser', autospec=True)
 @patch('synchronous_shopping.print', return_value=None)
 @patch('synchronous_shopping.input')
 @patch('synchronous_shopping.open')
-@patch('synchronous_shopping.os.environ', return_value={'OUTPUT_PATH': 'mock-output-path.file'})
+@patch.dict('synchronous_shopping.os.environ', {'OUTPUT_PATH': 'mock-output-path.file'})
 class TestMain(unittest.TestCase):
     def setUp(self):
         self.too_slow = {
@@ -57,9 +80,12 @@ class TestMain(unittest.TestCase):
             30,
         }
 
-    def test(self, mock_os_environ, mock_open, mock_input, mock_print, mock_sys_argv):
+    def test(self, mock_open, mock_input, mock_print, mock_produce_parser):
+        mock_args = MagicMock()
+        mock_args.input_filepath = None
+        mock_args.output_filepath = None
+        mock_produce_parser.return_value.parse_args.return_value = mock_args
         for i in range(0, 30+1):
-            mock_os_environ.reset_mock()
             mock_open.reset_mock()
             mock_input.reset_mock()
             mock_print.reset_mock()
@@ -75,7 +101,7 @@ class TestMain(unittest.TestCase):
                     expected = int(output_file.read().strip())
 
                 self.assertIsNone(main())
-                mock_open.assert_called_with(mock_os_environ['OUTPUT_PATH'], 'w', encoding='utf-8')
+                mock_open.assert_called_with('mock-output-path.file', 'w', encoding='utf-8')
                 mock_input.assert_called()
                 mock_open.return_value.__enter__.return_value.write.assert_called_once_with(str(expected) + '\n')
                 mock_print.assert_not_called()

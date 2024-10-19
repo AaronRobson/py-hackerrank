@@ -3,6 +3,7 @@
 '''https://www.hackerrank.com/challenges/synchronous-shopping/problem
 '''
 
+import argparse
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
@@ -20,7 +21,6 @@ except ImportError:
     Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
 from itertools import chain, filterfalse, permutations, product
-import sys
 
 
 Cache = dict[tuple[int, int], int]
@@ -78,12 +78,35 @@ def output_data(
     output_data_line_func()
 
 
+def produce_parser():
+    '''Produce command-line parser.
+    '''
+    parser = argparse.ArgumentParser(
+        description='Synchronous Shopping',
+    )
+    parser.add_argument(
+        'input_filepath',
+        nargs='?',
+        default=None,
+        help='Input filepath',
+    )
+    parser.add_argument(
+        '--output',
+        default=None,
+        dest='output_filepath',
+        help="Output filepath, if not passed use value from OUTPUT_PATH if present and default to outputting to stdout",
+    )
+    return parser
+
+
 def main() -> None:
-    if len(sys.argv) <= 1:
+    parser = produce_parser()
+    args = parser.parse_args()
+
+    if not args.input_filepath:
         data = input_data(input)
     else:
-        filepath = sys.argv[1]
-        with open(filepath, 'rt', encoding='utf-8') as fp:
+        with open(args.input_filepath, 'rt', encoding='utf-8') as fp:
             data = input_data(fp.readline)
 
     res = shop(
@@ -91,9 +114,17 @@ def main() -> None:
         centers=data['centers'],
         roads=data['roads'])
 
-    output_path = os.environ.get('OUTPUT_PATH')
-    if output_path:
-        with open(os.environ['OUTPUT_PATH'], 'w', encoding='utf-8') as fptr:
+    env_variable_contents = os.environ.get('OUTPUT_PATH')
+
+    if args.output_filepath:
+        output_filepath = args.output_filepath
+    elif env_variable_contents:
+        output_filepath = env_variable_contents
+    else:
+        output_filepath = None
+
+    if output_filepath:
+        with open(output_filepath, 'w', encoding='utf-8') as fptr:
             fptr.write(str(res) + '\n')
     else:
         print(res)

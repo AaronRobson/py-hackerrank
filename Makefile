@@ -7,7 +7,7 @@ all: check test graphs
 
 .PHONY: clean
 clean:
-	rm -f *.pyc *.dot *.gv *.bmp *.jpeg *.jpg *.pdf *.png *.pic *.ps *.svg
+	rm -f *.pyc *.dot *.gv *.bmp *.jpeg *.jpg *.pdf *.png *.pic *.ps *.svg output*-tmp.txt
 
 .PHONY: install-packages
 install-packages:
