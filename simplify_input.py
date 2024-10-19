@@ -1,49 +1,6 @@
 from typing import Optional
 
-
-def input_data() -> dict:
-    first_multiple_input = input().rstrip().split()
-
-    center_count = int(first_multiple_input[0])
-
-    road_count = int(first_multiple_input[1])
-
-    fish_count = int(first_multiple_input[2])
-
-    centers = []
-
-    for _ in range(center_count):
-        centers_item = input()
-        centers.append(centers_item)
-
-    roads = []
-
-    for _ in range(road_count):
-        roads.append(list(map(int, input().rstrip().split())))
-
-    return {
-        'center_count': center_count,
-        'road_count': road_count,
-        'fish_count': fish_count,
-        'centers': centers,
-        'roads': roads,
-    }
-
-
-def output_data(
-    *,
-    center_count,
-    road_count,
-    fish_count,
-    centers,
-    roads,
-) -> None:
-    print(f'{center_count} {road_count} {fish_count}')
-    for center in centers:
-        print(center)
-    for road in roads:
-        print(' '.join(map(str, road)))
-    print()
+from synchronous_shopping import input_data, output_data
 
 
 def simplify_id(

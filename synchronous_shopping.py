@@ -30,29 +30,66 @@ Center = int
 Centers = dict[Center, set[int]]
 
 
-def main() -> None:
-    def find_answer(retrieve_next_line_func) -> int:
-        first_multiple_input = retrieve_next_line_func().rstrip().split()
-        center_count = int(first_multiple_input[0])
-        road_count = int(first_multiple_input[1])
-        fish_count = int(first_multiple_input[2])
-        centers = [
-            retrieve_next_line_func()
-            for _ in range(center_count)]
-        roads = [
-            list(map(int, retrieve_next_line_func().rstrip().split()))
-            for _ in range(road_count)]
-        return shop(
-            fish_count=fish_count,
-            centers=centers,
-            roads=roads)
+def input_data(retrieve_next_line_func=input) -> dict:
+    first_multiple_input = retrieve_next_line_func().rstrip().split()
+    center_count = int(first_multiple_input[0])
+    road_count = int(first_multiple_input[1])
+    fish_count = int(first_multiple_input[2])
+    centers = [
+        retrieve_next_line_func()
+        for _ in range(center_count)]
+    roads = [
+        list(map(int, retrieve_next_line_func().rstrip().split()))
+        for _ in range(road_count)]
 
+    return {
+        'center_count': center_count,
+        'road_count': road_count,
+        'fish_count': fish_count,
+        'centers': centers,
+        'roads': roads,
+    }
+
+
+def output_data(
+    *,
+    center_count: Optional[int] = None,
+    road_count: Optional[int] = None,
+    fish_count: int,
+    centers: str,
+    roads: str,
+    output_data_line_func=print,
+) -> None:
+    if center_count is None:
+        center_count = len(centers)
+    elif center_count != len(centers):
+        raise ValueError('Incorrect center_count')
+
+    if road_count is None:
+        road_count = len(roads)
+    elif road_count != len(roads):
+        raise ValueError('Incorrect road_count')
+
+    output_data_line_func(f'{center_count} {road_count} {fish_count}')
+    for center in centers:
+        output_data_line_func(center)
+    for road in roads:
+        output_data_line_func(' '.join(map(str, road)))
+    output_data_line_func()
+
+
+def main() -> None:
     if len(sys.argv) <= 1:
-        res = find_answer(input)
+        data = input_data(input)
     else:
         filepath = sys.argv[1]
         with open(filepath, 'rt', encoding='utf-8') as fp:
-            res = find_answer(fp.readline)
+            data = input_data(fp.readline)
+
+    res = shop(
+        fish_count=data['fish_count'],
+        centers=data['centers'],
+        roads=data['roads'])
 
     output_path = os.environ.get('OUTPUT_PATH')
     if output_path:
