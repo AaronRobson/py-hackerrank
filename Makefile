@@ -7,7 +7,7 @@ all: check test graphs
 
 .PHONY: clean
 clean:
-	rm -f *.pyc *.dot *.gv *.bmp *.jpeg *.jpg *.pdf *.png *.pic *.ps *.svg output*-tmp.txt
+	rm -f *.pyc *.dot *.gv *.bmp *.jpeg *.jpg *.pdf *.png *.pic *.ps *.svg input*-tmp.txt output*-tmp.txt
 
 .PHONY: install-packages
 install-packages:
@@ -44,8 +44,8 @@ unittest-python:
 run:
 	python3 run_performance_check.py
 
-%.gv : %.txt generate_graph.py simplify_input.py
-	cat $< | python3 simplify_input.py | python3 generate_graph.py > $@
+%.gv : %.txt synchronous_shopping.py simplify_input.py
+	cat $< | python3 simplify_input.py | python3 synchronous_shopping.py --output-type graph > $@
 
 %.svg : %.gv
 	$(DOT) -Tsvg -o $@ $<

@@ -44,3 +44,19 @@ Or pass in via stdin:
 ```sh
 cat input06.txt | python3 synchronous_shopping.py
 ```
+
+#### Output passthrough
+
+```sh
+python3 synchronous_shopping.py input06.txt --output input06-tmp.txt --output-type passthrough
+```
+
+#### Output graphviz
+
+```sh
+python3 synchronous_shopping.py input06.txt --output input06-tmp.gv --output-type graph
+```
+
+```sh
+neato input06-tmp.gv -Tsvg -o output06.svg
+```

@@ -32,6 +32,7 @@ class TestProduceParser(unittest.TestCase):
         args = self.parser.parse_args([])
         self.assertIsNone(args.input_filepath)
         self.assertIsNone(args.output_filepath)
+        self.assertEqual(args.output_type, 'calculate')
 
     def test_populated_input(self):
         args = self.parser.parse_args([
@@ -44,6 +45,12 @@ class TestProduceParser(unittest.TestCase):
             '--output', 'outputXX.txt',
         ])
         self.assertEqual(args.output_filepath, 'outputXX.txt')
+
+    def test_populated_output_type_graph(self):
+        args = self.parser.parse_args([
+            '--output-type', 'graph',
+        ])
+        self.assertEqual(args.output_type, 'graph')
 
 
 @patch('synchronous_shopping.produce_parser', autospec=True)
@@ -84,6 +91,7 @@ class TestMain(unittest.TestCase):
         mock_args = MagicMock()
         mock_args.input_filepath = None
         mock_args.output_filepath = None
+        mock_args.output_type = 'calculate'
         mock_produce_parser.return_value.parse_args.return_value = mock_args
         for i in range(0, 30+1):
             mock_open.reset_mock()

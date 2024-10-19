@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from functools import partial
 from operator import attrgetter
 import os
-from typing import Any, Optional, NamedTuple
+from typing import Any, Generator, Optional, NamedTuple
 try:
     # Requires python3.11+
     # https://docs.python.org/3.11/library/typing.html#typing.Self
@@ -36,7 +36,7 @@ def input_data(retrieve_next_line_func=input) -> dict:
     road_count = int(first_multiple_input[1])
     fish_count = int(first_multiple_input[2])
     centers = [
-        retrieve_next_line_func()
+        retrieve_next_line_func().rstrip()
         for _ in range(center_count)]
     roads = [
         list(map(int, retrieve_next_line_func().rstrip().split()))
@@ -78,6 +78,30 @@ def output_data(
     output_data_line_func()
 
 
+def graphviz_info(*, centers: list[str], roads: list[list[int]], indent: str = ' ' * 2, **kwargs) -> Generator[str, None, None]:
+    yield 'strict graph {'
+    yield f'{indent}rankdir=LR;'
+    yield f'{indent}overlap=false;'
+    yield f'{indent}node [shape=box]'
+    for i, center in enumerate(centers, start=1):
+        foods = center.split()[1:]
+        attributes = []
+        if foods:
+            attributes.append(f'label="{i} ({", ".join(foods)})"')
+        if i in (1, len(centers)):
+            attributes.append('shape="oval"')
+        attribute_str = f' [{", ".join(attributes)}]' if attributes else ''
+        yield f'{indent}{i}{attribute_str};'
+    for from_, to_, cost in roads:
+        yield f'{indent}{from_} -- {to_} [label={cost}];'
+    yield '}'
+
+
+def output_graphviz_info(output_data_line_func=print, **data):
+    for line in graphviz_info(**data):
+        output_data_line_func(line)
+
+
 def produce_parser():
     '''Produce command-line parser.
     '''
@@ -94,7 +118,14 @@ def produce_parser():
         '--output',
         default=None,
         dest='output_filepath',
-        help="Output filepath, if not passed use value from OUTPUT_PATH if present and default to outputting to stdout",
+        help='Output filepath, if not passed use value from OUTPUT_PATH if present and default to outputting to stdout',
+    )
+    parser.add_argument(
+        '--output-type',
+        choices=['calculate', 'passthrough', 'graph'],
+        default='calculate',
+        dest='output_type',
+        help="'calculate' to work the answer out 'passthrough' to output the normal input format or 'graph' to encode graphviz commands",
     )
     return parser
 
@@ -109,13 +140,7 @@ def main() -> None:
         with open(args.input_filepath, 'rt', encoding='utf-8') as fp:
             data = input_data(fp.readline)
 
-    res = shop(
-        fish_count=data['fish_count'],
-        centers=data['centers'],
-        roads=data['roads'])
-
     env_variable_contents = os.environ.get('OUTPUT_PATH')
-
     if args.output_filepath:
         output_filepath = args.output_filepath
     elif env_variable_contents:
@@ -123,11 +148,34 @@ def main() -> None:
     else:
         output_filepath = None
 
-    if output_filepath:
-        with open(output_filepath, 'w', encoding='utf-8') as fptr:
-            fptr.write(str(res) + '\n')
+    if args.output_type == 'passthrough':
+        if output_filepath:
+            with open(output_filepath, 'w', encoding='utf-8') as fptr:
+                def func(line: str = ''):
+                    fptr.write(line + '\n')
+                output_data(**data, output_data_line_func=func)
+        else:
+            output_data(**data, output_data_line_func=print)
+    elif args.output_type == 'graph':
+        if output_filepath:
+            with open(output_filepath, 'w', encoding='utf-8') as fptr:
+                def func(line: str = ''):
+                    fptr.write(line + '\n')
+                output_graphviz_info(**data, output_data_line_func=func)
+        else:
+            output_graphviz_info(**data, output_data_line_func=print)
+    elif args.output_type == 'calculate':
+        res = shop(
+            fish_count=data['fish_count'],
+            centers=data['centers'],
+            roads=data['roads'])
+        if output_filepath:
+            with open(output_filepath, 'w', encoding='utf-8') as fptr:
+                fptr.write(str(res) + '\n')
+        else:
+            print(res)
     else:
-        print(res)
+        raise ValueError(f'{args.output_type!r} output-type is not recognised')
 
 
 def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable[tuple[int, ...]]:
