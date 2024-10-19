@@ -262,12 +262,11 @@ class Node():
 
 
 def _find_direct_roads(*, edges: tuple[Road, ...], from_: int) -> dict[int, int]:
-    output = {}
-    for edge in edges:
-        if from_ in edge.route:
-            to_ = list(edge.route - {from_})[0]
-            output[to_] = edge.cost
-    return output
+    return {
+        list(edge.route - {from_})[0]: edge.cost
+        for edge in edges
+        if from_ in edge.route
+    }
 
 
 def _find_new_node_in_progress(set_latest: dict[int, Node]) -> Optional[int]:
