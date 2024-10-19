@@ -42,10 +42,14 @@ unittest-python:
 
 .PHONY: run
 run:
-	python3 run_performance_check.py
+	python3 synchronous_shopping.py input06.txt
 
-%.gv : %.txt synchronous_shopping.py simplify_input.py
-	cat $< | python3 simplify_input.py | python3 synchronous_shopping.py --output-type graph > $@
+.PHONY: run-performance-check
+run-performance-check:
+	python3 synchronous_shopping.py input06.txt --profile
+
+%.gv : %.txt synchronous_shopping.py
+	python3 synchronous_shopping.py $< --output $@ --output-type graph
 
 %.svg : %.gv
 	$(DOT) -Tsvg -o $@ $<

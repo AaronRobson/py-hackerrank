@@ -16,9 +16,14 @@ make unittest
 make unittest testcase=test_synchronous_shopping.TestShop.test_case_6
 ```
 
-### Run performance check
+### Run to get an answer
 ```sh
 make run
+```
+
+### Run performance check
+```sh
+make run-performance-check
 ```
 
 ### Run it
