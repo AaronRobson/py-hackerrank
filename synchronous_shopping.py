@@ -19,7 +19,7 @@ except ImportError:
     # If other classes require this then this needs to change.
     Self = TypeVar('Self', bound='Node')  # type: ignore[misc]
 from sys import maxsize
-from itertools import chain, filterfalse, permutations
+from itertools import chain, filterfalse, permutations, product
 import sys
 
 
@@ -63,29 +63,10 @@ def main() -> None:
 
 
 def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable[tuple[int, ...]]:
-    '''Not all combinations.
-    '''
-    values = list(values)
-    min_value_length = min(map(len, values), default=0)
-    has_been_done = set()
-    exists = False
-    for value in filter(lambda v: len(v) == min_value_length, values):
-        for item in value:
-            if item in has_been_done:
-                continue
-            has_been_done.add(item)
-
-            new_values = [
-                new_value
-                for new_value in values
-                if item not in new_value
-            ]
-            for combination in _choose_combinations_of_centers(new_values):
-                exists = True
-                yield (item,) + combination
-    if not exists:
-        # There is only one way to choose no centers.
+    values = list(filter(None, values))
+    if not values:
         yield tuple()
+    yield from map(tuple, product(*values))
 
 
 def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> set[tuple[int, ...]]:
