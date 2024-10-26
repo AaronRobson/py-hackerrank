@@ -6,7 +6,7 @@
 import argparse
 import cProfile
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import partial
 from operator import attrgetter
@@ -252,7 +252,7 @@ def simplify_chains(
             from_, to_, cost = map(int, road)
             center_links[from_][to_] = cost
             center_links[to_][from_] = cost
-        center_to_remove: Optional[int] = None
+        center_to_remove = None
         for center, links in center_links.items():
             # skip removing the start or end centers
             if center in (1, center_count):
@@ -435,14 +435,14 @@ def main() -> None:
         raise ValueError(f'{args.output_type!r} output-type is not recognised')
 
 
-def _choose_combinations_of_centers(values: Sequence[Sequence[int]]) -> Iterable[tuple[int, ...]]:
+def _choose_combinations_of_centers(values) -> Iterable[tuple[int, ...]]:
     values = list(filter(None, values))
     if not values:
         yield tuple()
     yield from map(tuple, product(*values))
 
 
-def choose_all_combinations_of_centers(values: Sequence[Sequence[int]]) -> set[tuple[int, ...]]:
+def choose_all_combinations_of_centers(values: set[frozenset[int]]) -> set[tuple[int, ...]]:
     combinations = set(map(frozenset, _choose_combinations_of_centers(values)))
 
     combinations = set(filterfalse(lambda combination: any(combination > other for other in combinations), combinations))
