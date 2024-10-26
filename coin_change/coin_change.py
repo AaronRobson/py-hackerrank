@@ -3,14 +3,26 @@
 import os
 
 
-def get_ways(n, c):
+def get_ways(n, c, cache=None):
+    if cache is None:
+        cache = {}
+    c = tuple(c)
+    cached_value = cache.get((n, c))
+    if cached_value is not None:
+        return cached_value
     if n == 0:
-        return 1
+        output = 1
+        cache[(n, c)] = output
+        return output
     if not c:
-        return 0
-    ways_including_first_coin = get_ways(n - c[0], c) if c[0] <= n else 0
-    ways_without_first_coin = get_ways(n, c[1:])
-    return ways_including_first_coin + ways_without_first_coin
+        output = 0
+        cache[(n, c)] = output
+        return output
+    ways_including_first_coin = get_ways(n - c[0], c, cache) if c[0] <= n else 0
+    ways_without_first_coin = get_ways(n, c[1:], cache)
+    output = ways_including_first_coin + ways_without_first_coin
+    cache[(n, c)] = output
+    return output
 
 
 def main() -> None:
