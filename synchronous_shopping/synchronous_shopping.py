@@ -153,7 +153,6 @@ def simplify_fish(
     # shift remaining fish down
     for redundant_fish in redundant_fishes:
         for i in range(center_count):
-            pass
             values = [
                 int(value)
                 for value in centers[i].split()[1:]
@@ -274,7 +273,7 @@ def simplify_chains(
         roads = [
             [from_, to_, cost]
             for from_, to_, cost in roads
-            if (from_ != center_to_remove) and (to_ != center_to_remove)
+            if center_to_remove not in (from_, to_)
         ]
         # see if a bypass is worthwhile
         from_, to_ = list(links.keys())
@@ -375,64 +374,87 @@ def produce_parser():
     return parser
 
 
+def find_data(*, input_filepath: str) -> dict:
+    if not input_filepath:
+        return input_data(input)
+    with open(input_filepath, 'rt', encoding='utf-8') as fp:
+        return input_data(fp.readline)
+
+
+def choose_output_filepath(*, output_filepath: str) -> Optional[str]:
+    env_variable_contents = os.environ.get('OUTPUT_PATH')
+    if output_filepath:
+        return output_filepath
+    if env_variable_contents:
+        return env_variable_contents
+    return None
+
+
+def output(*, output_type: str, output_filepath: Optional[str], data: dict, profile: bool) -> None:
+    output_table = {
+        'passthrough': output_passthrough,
+        'graph': output_graph,
+        'calculate': output_calculate,
+    }
+    output_func = output_table.get(output_type, None)
+    if output_func is None:
+        raise ValueError(f'{output_type!r} output-type is not recognised')
+    output_func(output_filepath=output_filepath, data=data, profile=profile)
+
+
+def output_passthrough(*, output_filepath: Optional[str], data: dict, profile: bool) -> None:
+    if not output_filepath:
+        output_data(**data, output_data_line_func=print)
+        return
+    with open(output_filepath, 'w', encoding='utf-8') as fptr:
+        def func(line: str = ''):
+            fptr.write(line + '\n')
+        output_data(**data, output_data_line_func=func)
+
+
+def output_graph(*, output_filepath: Optional[str], data: dict, profile: bool) -> None:
+    if not output_filepath:
+        output_graphviz_info(**data, output_data_line_func=print)
+        return
+    with open(output_filepath, 'w', encoding='utf-8') as fptr:
+        def func(line: str = ''):
+            fptr.write(line + '\n')
+        output_graphviz_info(**data, output_data_line_func=func)
+
+
+def output_calculate(*, output_filepath: Optional[str], data: dict, profile: bool) -> None:
+    pr = None
+    try:
+        if profile:
+            pr = cProfile.Profile()
+            pr.enable()
+        res = shop(**data)
+    finally:
+        if pr is not None:
+            pr.disable()
+            ps = pstats.Stats(pr, stream=sys.stdout)
+            ps.sort_stats('cumulative')
+            ps.print_stats()
+
+    if not output_filepath:
+        print(res)
+        return
+    with open(output_filepath, 'w', encoding='utf-8') as fptr:
+        fptr.write(str(res) + '\n')
+
+
 def main() -> None:
     parser = produce_parser()
     args = parser.parse_args()
 
-    if not args.input_filepath:
-        data = input_data(input)
-    else:
-        with open(args.input_filepath, 'rt', encoding='utf-8') as fp:
-            data = input_data(fp.readline)
+    data = find_data(input_filepath=args.input_filepath)
 
     if args.simplify:
         data = simplify(**data)
 
-    env_variable_contents = os.environ.get('OUTPUT_PATH')
-    if args.output_filepath:
-        output_filepath = args.output_filepath
-    elif env_variable_contents:
-        output_filepath = env_variable_contents
-    else:
-        output_filepath = None
+    output_filepath = choose_output_filepath(output_filepath=args.output_filepath)
 
-    if args.output_type == 'passthrough':
-        if output_filepath:
-            with open(output_filepath, 'w', encoding='utf-8') as fptr:
-                def func(line: str = ''):
-                    fptr.write(line + '\n')
-                output_data(**data, output_data_line_func=func)
-        else:
-            output_data(**data, output_data_line_func=print)
-    elif args.output_type == 'graph':
-        if output_filepath:
-            with open(output_filepath, 'w', encoding='utf-8') as fptr:
-                def func(line: str = ''):
-                    fptr.write(line + '\n')
-                output_graphviz_info(**data, output_data_line_func=func)
-        else:
-            output_graphviz_info(**data, output_data_line_func=print)
-    elif args.output_type == 'calculate':
-        pr = None
-        try:
-            if args.profile:
-                pr = cProfile.Profile()
-                pr.enable()
-            res = shop(**data)
-        finally:
-            if pr is not None:
-                pr.disable()
-                ps = pstats.Stats(pr, stream=sys.stdout)
-                ps.sort_stats('cumulative')
-                ps.print_stats()
-
-        if output_filepath:
-            with open(output_filepath, 'w', encoding='utf-8') as fptr:
-                fptr.write(str(res) + '\n')
-        else:
-            print(res)
-    else:
-        raise ValueError(f'{args.output_type!r} output-type is not recognised')
+    output(output_type=args.output_type, output_filepath=output_filepath, data=data, profile=args.profile)
 
 
 def _choose_combinations_of_centers(values) -> Iterable[tuple[int, ...]]:

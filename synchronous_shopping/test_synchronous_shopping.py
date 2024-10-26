@@ -6494,7 +6494,6 @@ class TestParseRoads(unittest.TestCase):
         )
 
     def test_sample_test_case_1(self):
-        self.maxDiff = None
         self.assertEqual(
             parse_roads([
                 [1, 2, 572],
@@ -6715,7 +6714,6 @@ class TestFindCentersWithFishesWeNeed(unittest.TestCase):
         )
 
     def test_sample_test_case_1(self):
-        self.maxDiff = None
         self.assertEqual(
             find_centers_with_fishes_we_need(
                 centers={

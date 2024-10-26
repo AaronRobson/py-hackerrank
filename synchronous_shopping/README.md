@@ -48,7 +48,7 @@ python3 synchronous_shopping.py input06.txt --output output06-tmp.txt
 
 Or pass in via stdin:
 ```sh
-cat input06.txt | python3 synchronous_shopping.py
+cat input06.txt | python3 synchronous_shopping.py --output output06-tmp.txt
 ```
 
 #### Output passthrough
