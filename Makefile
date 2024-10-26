@@ -1,69 +1,53 @@
 .DEFAULT_GOAL := all
 
-DOT?=neato
-
 .PHONY: all
-all: check test graphs
+all:
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: clean
 clean:
-	rm -f *.pyc *.dot *.gv *.bmp *.jpeg *.jpg *.pdf *.png *.pic *.ps *.svg input*-tmp.txt output*-tmp.txt
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: install-packages
 install-packages:
-	python3 -m pip install --upgrade \
-	  -r dev-requirements.txt \
-	  -r requirements.txt
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: check
-check: check-src type-check lint
+check:
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: check-src
 check-src:
-	python3 -m flake8 .
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: type-check
 type-check:
-	python3 -m mypy .
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: lint
 lint:
 	python3 -m pylint .
 
 .PHONY: test
-test: unittest
+test:
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: unittest
-unittest: unittest-python
+unittest:
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: unittest-python
 unittest-python:
-	python3 -m unittest -v $(testcase)
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: run
 run:
-	python3 synchronous_shopping.py input06.txt
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: run-performance-check
 run-performance-check:
-	python3 synchronous_shopping.py input06.txt --profile
-
-%.gv : %.txt synchronous_shopping.py
-	python3 synchronous_shopping.py $< --output $@ --output-type graph
-
-%.svg : %.gv
-	$(DOT) -Tsvg -o $@ $<
-
-%.png : %.gv
-	$(DOT) -Tpng -o $@ $<
-
-SRC_FILES=$(wildcard input*.txt)
-GZ_FILES=$(SRC_FILES:.txt=.gv)
-OUT_FILES=$(GZ_FILES:.gv=.svg)
-
-.PHONY: listtargets
-listtargets:
-	@echo $(OUT_FILES)
+	cd synchronous_shopping && $(MAKE) $@
 
 .PHONY: graphs
-graphs: $(OUT_FILES)
+graphs:
+	cd synchronous_shopping && $(MAKE) $@

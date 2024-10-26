@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import MagicMock, patch
 from sys import maxsize
@@ -119,9 +120,9 @@ class TestMain(unittest.TestCase):
                 i_zpad = f'{i:02}'
                 if i in self.too_slow:
                     self.skipTest(reason=f'test {i_zpad} runs too slow')
-                with open(f'input{i_zpad}.txt', 'r', encoding='utf-8') as input_file:
+                with open(os.path.join(os.path.dirname(__file__), f'input{i_zpad}.txt'), 'r', encoding='utf-8') as input_file:
                     mock_input.side_effect = input_file.readlines()
-                with open(f'output{i_zpad}.txt', 'r', encoding='utf-8') as output_file:
+                with open(os.path.join(os.path.dirname(__file__), f'output{i_zpad}.txt'), 'r', encoding='utf-8') as output_file:
                     expected = int(output_file.read().strip())
 
                 self.assertIsNone(main())
