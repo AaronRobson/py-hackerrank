@@ -6,6 +6,7 @@ all:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: clean
 clean:
@@ -13,6 +14,7 @@ clean:
 	# cd flipping_bits && $(MAKE) $@
 	# cd coin_change && $(MAKE) $@
 	# cd fibonacci_modified && $(MAKE) $@
+	# cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: install-packages
 install-packages:
@@ -20,6 +22,7 @@ install-packages:
 	cd flipping_bits && $(MAKE) $@
 	# cd coin_change && $(MAKE) $@
 	# cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: check
 check:
@@ -27,6 +30,7 @@ check:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: check-src
 check-src:
@@ -34,6 +38,7 @@ check-src:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: type-check
 type-check:
@@ -41,6 +46,7 @@ type-check:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: lint
 lint:
@@ -48,6 +54,7 @@ lint:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: test
 test:
@@ -55,6 +62,7 @@ test:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: unittest
 unittest:
@@ -62,6 +70,7 @@ unittest:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: unittest-python
 unittest-python:
@@ -69,6 +78,7 @@ unittest-python:
 	cd flipping_bits && $(MAKE) $@
 	cd coin_change && $(MAKE) $@
 	cd fibonacci_modified && $(MAKE) $@
+	cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: run
 run:
@@ -76,6 +86,7 @@ run:
 	# cd flipping_bits && $(MAKE) $@
 	# cd coin_change && $(MAKE) $@
 	# cd fibonacci_modified && $(MAKE) $@
+	# cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: run-performance-check
 run-performance-check:
@@ -83,6 +94,7 @@ run-performance-check:
 	# cd flipping_bits && $(MAKE) $@
 	# cd coin_change && $(MAKE) $@
 	# cd fibonacci_modified && $(MAKE) $@
+	# cd kittys_calculations_on_a_tree && $(MAKE) $@
 
 .PHONY: graphs
 graphs:
@@ -90,3 +102,4 @@ graphs:
 	# cd flipping_bits && $(MAKE) $@
 	# cd coin_change && $(MAKE) $@
 	# cd fibonacci_modified && $(MAKE) $@
+	# cd kittys_calculations_on_a_tree && $(MAKE) $@
